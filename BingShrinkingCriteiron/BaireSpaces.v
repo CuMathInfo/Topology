@@ -4,16 +4,16 @@
 Theorem BaireCategoryTheorem :  complete d d_metric -> baire_space. 
 
 ******************************************************************)
-
-Require Import ssreflect ssrbool.  
-Require Export MetricSpaces. 
-Require Export Completeness.
 Require Import ClassicalChoice.
 Require Export ChoiceFacts.
-Require Import EnsemblesSpec.
-Require Import RationalsInReals.
 Require Import Reals.
 Require Import Fourier.
+From mathcomp
+Require Import ssreflect ssrbool.
+From Topology
+Require Export MetricSpaces Completeness RationalsInReals.
+From ZornsLemma
+Require Import EnsemblesSpec.
 
 Open Scope R_scope.
 
@@ -22,9 +22,7 @@ Section BaireSpaces.
 Variable X : TopologicalSpace.
 
 (* We use the the following form of the Axiom of Choice *)
-Print FunctionalDependentChoice_on.
 Axiom FDC : FunctionalDependentChoice_on (point_set X * { r:R | r > 0} * nat).
-Print FunctionalDependentChoice_on.
 
 (* Definition of Baire Spaces *)
 Definition baire_space : Prop :=
@@ -409,8 +407,8 @@ Lemma open_ball_is_open:
   forall (x: point_set X) (r: R), 
     r > 0 -> open (open_ball (point_set X) d x r).
 Proof.
-move=> x r H_r_pos.
-have H_In_MTOB_oball: 
+  move=> x r H_r_pos.
+have H_In_MTOB_oball:
   In (metric_topology_neighborhood_basis d x)
      (open_ball (point_set X) d x r) 
   by apply: intro_open_ball.
@@ -518,8 +516,6 @@ apply Req_le in H0.
 move: H0 H2.
 tauto.
 have HoU: open (IndexedUnion cover).
-Print IndexedUnion.
-SearchAbout IndexedUnion.
 apply open_indexed_union.
 move=>xd.
 apply: open_ball_is_open.
@@ -529,7 +525,6 @@ apply (proj2_sig xd).
 rewrite cplmt_as_union.
 exact.
 Qed.
-Print complete.
 
 (* The Baire Category Theorem for complete metric spaces *)
 
@@ -792,7 +787,7 @@ have ineq : r_n n * (1 - (/ 2) ^ k) + r_n n * / 2 * (/ 2) ^ k
           <=  r_n n * (1 - (/ 2) ^ S k).
 have tmp3:  r_n n * (1 - (/ 2) ^ k) + r_n n * / 2 * (/ 2) ^ k 
   = r_n n * ((1 - (/ 2) ^ k) +  / 2 * (/ 2) ^ k). 
-SearchAbout Rmult.  rewrite  Rmult_plus_distr_l.
+rewrite  Rmult_plus_distr_l.
 have tmp4: r_n n * (/2 * (/2)^k) = r_n n * /2 *(/2)^k.
 rewrite Rmult_assoc.
 reflexivity.
@@ -839,10 +834,6 @@ exact.
 exact.
 move: Ineq.
 by apply Rlt_le.
-
-(*********************************)
-Print Inhabited_intro.
-Print cauchy.
 have HCauchy: cauchy  d x_n. 
 red.
 move=> eps eps_pos.
@@ -994,18 +985,12 @@ assumption.
 destruct (Lim D).
 (* assumption. (* <-DESN'T WORK-*)*)
 simpl. (** THIS simpl REVEALS THIS open D ISN'T THAT open D**)
-Print B_open.
 (*apply B_open_intro.*)
-Print IndexedFamily.
-Print Singleton.
 set F:= Singleton D.
-Check F.
 have FD: D=FamilyUnion F.
 apply Extensionality_Ensembles; red; split.
 red. intros.
-Print FamilyUnion.
 apply (family_union_intro F D).
-Print Singleton.
 apply In_singleton.
 assumption.  
 red.
@@ -1205,7 +1190,6 @@ assumption.
 have tmp12: r0_t = r0 + r0.
 rewrite/r0.
 rewrite/Rdiv.
-SearchAbout Rmult.
 rewrite -Rmult_plus_distr_r.
 field.
 rewrite tmp12; clear tmp12.
