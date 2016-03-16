@@ -1,0 +1,6 @@
+*.vo
+*.glob
+*.clean
+*.aux
+*.dvi
+*.pdf
