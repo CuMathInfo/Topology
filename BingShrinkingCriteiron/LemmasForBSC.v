@@ -1,20 +1,15 @@
 (** LemmasForBSC.v by Ken'ichi Kuga *)
+(** Simplification using SSReflect by Manabu Hagiwara *)
 (** Lemmas for BingShrinkingCriterion.v **)
-
+Require Import ClassicalChoice Fourier.
 From mathcomp
-Require Import ssreflect ssrbool.
-Require Import ClassicalChoice.
-Require Import FunctionalExtensionality.
-Require Import Fourier.
+ Require Import ssreflect.
 From Topology
-Require Import MetricSpaces Completeness SubspaceTopology.
-From Topology
-Require Import WeakTopology RationalsInReals Subbases Compactness.
+ Require Import Completeness RationalsInReals Subbases Compactness.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
-
 
 Open Scope R_scope.
 
@@ -27,7 +22,7 @@ Let Xt := MetricTopology d d_metric.
 Let Yt := MetricTopology d' d'_metric.
 Variable f : point_set Xt -> point_set Yt.
 Hypothesis h_f_conti : continuous f.
-Hypotheses X_compact: Compactness.compact Xt. (* Y_compact: compact Yt.*)
+Hypotheses X_compact: compact Xt. (* Y_compact: compact Yt.*)
 
 Definition RR (eps: R) (n:nat) (xx: X*X):Prop :=
     d (fst xx) (snd xx) < / INR (S n) /\ 
@@ -376,7 +371,8 @@ have U': exists U':Ensemble (point_set Xt), open U' /\
 
 case: U' => [U' [U'open U_U']]. 
 
-have ObX: exists r:R, r>0 /\ Included (open_ball (point_set Xt) d (proj1_sig x) r) U'.
+have ObX: exists r:R,
+ r>0 /\ Included (open_ball (point_set Xt) d (proj1_sig x) r) U'.
  apply: open_ball_in_open; last by [].
  rewrite /(subspace_inc A) in U_U'.
  apply: inverse_image_image=> /=.
