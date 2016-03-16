@@ -7,9 +7,9 @@ BaireSpaces.v
 
 BingShrinkingCriterion.v
 
-These files depend on the following libraries:
+These files depend on the Topology and ZornsLemma libraries by Daniel Schepler
+in zorns-lemma and topology submodules in coq-contribs in inria:
 
-http://www.lix.polytechnique.fr/coq/pylons/contribs/view/ZornsLemma/v8.4
+https://scm.gforge.inria.fr/anonscm/git/coq-contribs/coq-contribs.git
 
-http://www.lix.polytechnique.fr/coq/pylons/contribs/view/Topology/v8.4
 
