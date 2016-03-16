@@ -7,9 +7,9 @@ Require Import ClassicalChoice.
 Require Import FunctionalExtensionality.
 Require Import Fourier.
 From Topology
-Require Import MetricSpaces Compactness Completeness SubspaceTopology.
+Require Import MetricSpaces Completeness SubspaceTopology.
 From Topology
-Require Import WeakTopology RationalsInReals Subbases.
+Require Import WeakTopology RationalsInReals Subbases Compactness.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -27,7 +27,7 @@ Let Xt := MetricTopology d d_metric.
 Let Yt := MetricTopology d' d'_metric.
 Variable f : point_set Xt -> point_set Yt.
 Hypothesis h_f_conti : continuous f.
-Hypotheses X_compact: compact Xt. (* Y_compact: compact Yt.*)
+Hypotheses X_compact: Compactness.compact Xt. (* Y_compact: compact Yt.*)
 
 Definition RR (eps: R) (n:nat) (xx: X*X):Prop :=
     d (fst xx) (snd xx) < / INR (S n) /\ 

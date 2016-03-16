@@ -3,7 +3,7 @@
 (*          and                                            *)
 (*     Bing Shrinking Theorem for compact spaces           *)
 (* *********************************************************)
-(*
+(* 
 
 Definition approximable_by_homeos (f:X->Y): Prop:=
   forall eps:R, eps>0 ->
@@ -24,23 +24,21 @@ continuous f -> surjective f ->
  (Bing_shrinkable f -> approximable_by_homeos f).    
 
 ************************************************************)
-
-Require Import ssreflect ssrbool.
-Require Import MetricSpaces.
-Require Import RTopology.
-Require Import Continuity.
-Require Import ContinuousFactorization.
-Require Import Completeness.
-Require Import Compactness.
-Require Import WeakTopology.
-Require Import Homeomorphisms.
 Require Import ProofIrrelevance.
-Require Import Proj1SigInjective.
 Require Import ClassicalChoice.
 Require Import Classical.
 Require Import Fourier.
 Require Import FunctionalExtensionality.
-Require Import RationalsInReals.
+From mathcomp
+Require Import ssreflect ssrbool.
+From ZornsLemma
+Require Import Proj1SigInjective.
+From Topology
+Require Import MetricSpaces RTopology ContinuousFactorization.
+From Topology
+Require Import Completeness Compactness WeakTopology Homeomorphisms.
+From Topology
+Require Import RationalsInReals Continuity.
 
 (*******************************)
 Require Import BaireSpaces.
@@ -147,7 +145,6 @@ Lemma id_map_homeomorphism :
   forall XT:TopologicalSpace, homeomorphism (id_map XT).
 Proof.
 move=>XT.
-Print homeomorphism.
 apply intro_homeomorphism with (id_map XT).
 apply id_map_continuous.
 apply id_map_continuous.
@@ -213,7 +210,6 @@ set eps:= dt (xn n0) x - r.
 have eps_pos: eps > 0.
 rewrite/eps.
 fourier.
-Print open_ball.
 destruct lim_x with (open_ball T dt x eps).
 apply open_ball_open with (x:=x) (r:=eps).
 assumption.
@@ -280,7 +276,6 @@ destruct H1.
 rewrite H2.
 apply Rle_trans with 
   (d' (y0 x) (f0 x) + d' (y0 x) (g0 x)).
-Print metric_sym.
 rewrite (metric_sym _ d' d'_metric (y0 x) (f0 x)); apply triangle_inequality; trivial.
 assert (d' (y0 x) (f0 x) <= mf) 
   by (apply H; exists x; trivial).
@@ -383,7 +378,6 @@ apply Rle_antisym.
 apply i.
 by exists x.
 apply Rge_le.
-Print metric_nonneg.
 by apply (metric_nonneg _ d' d'_metric).
 Qed.
 
@@ -428,7 +422,6 @@ Lemma um_complete: complete d' d'_metric -> complete um um_metric.
 Proof.
 red. 
 move=> cpl_d' fn cauchy_fn.
-SearchAbout nat_DS.
 pose yn (x:X): Net nat_DS Yt:= fun n:nat => (proj1_sig (fn n%nat)) x.
 have cauchy_yn: forall x:X, cauchy d' (yn x).
 move=>x eps pos_eps.
@@ -442,7 +435,6 @@ apply d'xu.
 apply cau_fn.
 apply hm.
 by apply hn.
-Print choice.
 pose choice_R (x:X) (y:Y): Prop := net_limit (yn x) y. 
 have choice_f0: forall x:X, exists y:Y, (choice_R x y).
 move=>x.
@@ -487,14 +479,11 @@ have hpos_ep: ep > 0.
 apply Rlt_gt in Fh.
 rewrite/ep.
 by apply Rgt_minus.
-Print net_limit.
-Print open_ball.
 destruct Hf0 with (x:=x) (U:= open_ball Y d' (f0 x) ep).
 by apply open_ball_open with (x:=f0 x) (r:=ep).
 constructor.
 by rewrite metric_zero.
 simpl in H1.
-Print net_limit.
 simpl in x0.
 set m0:=max n0 x0.
 destruct H1 with m0.
@@ -578,10 +567,8 @@ by apply Rlt_irrefl.
 pose (proj2_sig (fn N)).
 simpl in a.
 destruct a as [_ HC].
-Print continuous_func_continuous_everywhere.
 apply (continuous_func_continuous_everywhere 
    Xt Yt (proj1_sig (fn N))) with x in HC.
-Print metric_space_fun_continuity_converse.
 apply (metric_space_fun_continuity_converse
   Xt Yt (proj1_sig (fn N)) x d d') with (/2 * eps) in HC.
 destruct HC as [delta HC].
@@ -653,7 +640,6 @@ have tmp: proj1_sig (fn j) x = (yn x) j by rewrite/yn.
 rewrite tmp; clear tmp.
 rewrite metric_sym.
 
-Print lim_range.
 apply (lim_range
            Y d' d'_metric (f0 x) (yn x) (/2*eps) j).
 move=>n le_j_n.
@@ -702,7 +688,6 @@ assumption.
 move=> y' d'yy'_eps.
 rewrite/R_metric.
 rewrite/g.
-SearchAbout Rabs.
 apply Rabs_def1. 
 have tri1: d' Y0 y' <= d' y y' + d' Y0 y.
 have tmp: d' y y' + d' Y0 y = d' Y0 y + d' y y' by apply Rplus_comm.
@@ -726,7 +711,6 @@ apply R_compact_subset_bounded.
 have Imft: Im Full_set (fun x : X => d' (y0 x) (f x))
   = Im Full_set ft.
 apply Extensionality_Ensembles; split; red; intros.
-Print Im.
 destruct H.
 rewrite y0Y0 in H0.
 apply Im_intro with x.
@@ -746,7 +730,6 @@ rewrite Imft.
   forall x:point_set Xt, In (Im Full_set ft) (ft x).
 move=>x.
 by apply Im_intro with x.*)
-Print continuous_surj_factorization.
 set ftr := continuous_surj_factorization ft.
 apply compact_image with ftr.
 assumption.
@@ -878,7 +861,6 @@ have log_lem1: forall p q:Prop,
 ~(p/\q) -> (p -> q -> False) by tauto.
 apply log_lem1.
 by apply FH1.
-Print exist.
 destruct ABCk as [ak BCk].
 destruct BCk as [bk Ck].
 exists (ak, bk, (proj1_sig (gn (max nr k)) ak), (gn (max nr k))). 
@@ -898,7 +880,6 @@ apply Rlt_le_trans with (/ INR (S (max nr 0))).
 by apply H0.
 apply Rle_Rinv.
 by auto with real.
-SearchAbout INR.
 apply lt_0_INR.
 by apply lt_0_Sn.
 have INR1: 1 = INR(S O) by auto.
@@ -908,7 +889,6 @@ apply le_n_S.
 by apply Max.le_max_r.
 apply Rlt_le_trans with (/ INR (S (max nr (S k)))).
 by apply H0.
-SearchAbout Rinv.
 apply Rle_Rinv.
 by auto with real.
 apply lt_0_INR.
@@ -1042,8 +1022,6 @@ rewrite/(bN n).
 destruct H_Nab with n.
 destruct H0.
 by apply H1.
-(*************************)
-SearchAbout metrizes.
 have d_metrizes: metrizes Xt d 
 by apply (MetricTopology_metrizable X d d_metric).
 have d'_metrizes: metrizes Yt d' 
@@ -1103,7 +1081,6 @@ apply Rle_lt_trans
           d' (proj1_sig fr (bN N)) (proj1_sig fr lim_b)).
 apply triangle_inequality.
 by apply d'_metric.
-SearchAbout Rlt.
 apply Rplus_lt_compat.
 apply Rle_lt_trans
    with (d' (proj1_sig fr lim_a) (proj1_sig (gN N) (bN N)) + 
@@ -1119,7 +1096,6 @@ by apply d'_metric.
 rewrite (gNaN_cN N).
 rewrite (gNbN_cN N).
 rewrite metric_zero.
-SearchAbout Rplus.
 rewrite Rplus_0_r.
 apply Rle_lt_trans 
   with (d' (proj1_sig fr lim_a) (proj1_sig fr (aN N)) +
@@ -1140,11 +1116,9 @@ by red in N_pos.
 by apply pos_INR_Sn.
 apply lt_INR.
 by apply lt_n_Sn.
-SearchAbout Rmin.
 apply Rmin_glb_lt.
 apply Rlt_le_trans with (Rmin (/4*eps) del).
 by apply N_large.
-SearchAbout Rle.
 by apply Rmin_l.
 apply Rlt_le_trans with (Rmin (/4*eps) del).
 by apply N_large.
@@ -1159,7 +1133,6 @@ apply Rlt_le_trans with (/INR (S N)).
 by apply umfrgN.
 apply Rlt_le.
 apply Rlt_le_trans with (/INR N). 
-SearchAbout Rinv.
 apply Rinv_lt_contravar.
 apply Rmult_lt_0_compat.
 apply lt_0_INR.
@@ -1180,7 +1153,6 @@ apply Rlt_le_trans with (/INR (S N)).
 by apply umfrgN.
 apply Rlt_le.
 apply Rlt_le_trans with (/INR N). 
-SearchAbout Rinv.
 apply Rinv_lt_contravar.
 apply Rmult_lt_0_compat.
 apply lt_0_INR.
@@ -1224,7 +1196,7 @@ apply metric_strict with d'.
 by apply d'_metric.
 rewrite H.
 by reflexivity.
-(**********************************)
+
 have dlimalimb_r: d lim_a lim_b < r.
 apply fr_in_W.
 by apply frab.
@@ -1280,8 +1252,6 @@ destruct daNbN_lt_r.
 by apply daNbN_r. 
 Qed. (*** W_is_open is defined ***)
 
-Print Complement.
-Print Im.
 Lemma bijection_complement:
 forall (Xt Yt:TopologicalSpace) 
 (f: (point_set Xt) -> (point_set Yt)) (U: Ensemble (point_set Xt)),
@@ -1315,8 +1285,6 @@ by rewrite <- H0.
 rewrite xeqx0 in H.
 by destruct H.
 Qed.
-
-(***********************************)
 
 Lemma bij_conti_is_homeo_for_compact_Hausdorff_spaces:
 compact Xt -> compact Yt -> Hausdorff Xt -> Hausdorff Yt ->
@@ -1355,21 +1323,10 @@ assumption.
 destruct yfx0.
 destruct H.
 destruct f_bijective.
-Print injective.
 by have ->: x=x0 by exact: H1.
-(*have x_x0: x = x0 by exact: H1.*)
-Print subset_eq_compatT.
-(*
-rewrite<-H0.
-rewrite-/y.
-reflexivity.
 
-rewrite x_x0.
-assumption.
-*)
 pose (fP:=fun xP: {x:point_set Xt | In (Complement U) x} =>
   (exist (Complement (Im U f)) (f (proj1_sig xP)) (CImUf xP)  )).
-Print compact_image.     
 
 apply (@compact_image 
         (SubspaceTopology (Complement U))
@@ -1379,17 +1336,14 @@ apply (@compact_image
 apply closed_compact.
 apply Xt_compact.
 red.
-SearchAbout Complement.
 by rewrite Complement_Complement.
 red.
 move=> V V_open.
-Print subspace_inc.
 have WinY: exists W:Ensemble (point_set Yt),
   open W /\ V = inverse_image (@subspace_inc Yt (Complement (Im U f))) W.
 apply subspace_topology_topology.
 assumption.
 destruct WinY as [W' [W'_open V_inv_W']]. 
-Print inverse_image.
 have InvInv:  inverse_image fP V = 
               inverse_image (@subspace_inc Xt (Complement U))
                              (inverse_image f W').
@@ -1407,7 +1361,7 @@ rewrite V_inv_W' in H.
 destruct H.
 simpl in H.
 assumption.
-(*******************************)
+
 red.
 constructor.
 red in H.
@@ -1430,7 +1384,6 @@ simpl.
 move=> y.
 destruct y as [y0' Hy0'].
 destruct f_surj with y0' as [x0].
-Print proof_irrelevance.
 rewrite/fP.
 have InCUx0: In (Complement U) x0.
 red.
@@ -1442,9 +1395,6 @@ by apply Im_intro with x0.
 exists (exist _  _ InCUx0).
 exact: subset_eq_compatT.
 Qed. (*** bij_cont_is_homeo_for_compact_Hausdorff_spaces is defined ***)
-
-(********************************************)
-
 
 Definition approximable_by_homeos (f:X->Y): Prop:=
   forall eps:R, eps>0 ->
@@ -1543,9 +1493,7 @@ have projg_incg: proj1_sig gPP = subspace_inc CfH gPP by [].
 by rewrite projg_incg.
 assumption. 
 destruct r_exists as [r [r_pos IcOB_V]]. 
-(**********)
 have Exfh0: Inhabited (Intersection fH (open_ball (point_set CMapt) um (proj1_sig gPP) (r*/2))). 
-Print closure_impl_meets_every_open_neighborhood.
 apply closure_impl_meets_every_open_neighborhood with (proj1_sig gPP).
 destruct  gPP as [gP1 IngCfH].
 simpl.
@@ -1563,16 +1511,16 @@ clear umzero.
 fourier.
 destruct Exfh0 as [fh0 h1_fh0].
 destruct h1_fh0 as [fh0 InfHfh0].
-destruct H as [umgPfh0]. 
+destruct H as [umgPfh0].  
 destruct InfHfh0 as [h0 [h_h0 h_fh0]].
 destruct h_h0 as [h' h0_conti h'_conti h_h'h0 h_h0h'].
 set eps1:= Rmin (r*/2) (/ INR (S n)).
 have h_delta: exists delta:R, delta > 0 /\
   forall x1 x2 : X, d x1 x2 < delta -> d (h' x1) (h' x2) < eps1. 
 apply dist_uniform_on_compact.
+assumption.
 have h_Xt: Xt = MetricTopology d d_metric by rewrite/Xt.
 by rewrite<-h_Xt.
-assumption. 
 rewrite/eps1.
 red.
 apply Rmin_pos.
@@ -1705,11 +1653,10 @@ apply Rlt_le_trans with (Rmin delta (r * /2)).
 by apply h1_k.
 by apply Rmin_r.
 assumption.
-Print baire_space.
 have IWn_dense: dense (IndexedIntersection Wn).
 apply CfHt_baire.
 by apply WnOD.
-(**********************************)
+
 have InCfHfP: In CfH fP.
 rewrite/CfH.
 by apply closure_inflationary.
@@ -1718,12 +1665,10 @@ set OBeps := (open_ball CMap um  fP eps).
 have WnBeps: Inhabited (Intersection (IndexedIntersection Wn) (inverse_image (subspace_inc CfH) OBeps)). 
 apply dense_meets_every_nonempty_open.
 by apply IWn_dense.
-SearchAbout subspace_inc.
 apply subspace_inc_continuous.
 apply open_ball_open with (x:=fP) (r:=eps). 
 apply eps_pos.
 by rewrite/OBeps.
-Print Inhabited.
 apply Inhabited_intro with fPP.
 constructor.
 simpl.
@@ -1804,19 +1749,15 @@ move=> InImhy.
 destruct InImhy as [x InXx y_hx].
 destruct h_nx.
 by exists x.
-Print Full_set.
-Print Im.
 have CImh_open: 
   open (@Complement (point_set Yt) (@Im (point_set Xt) _  Full_set h)).
 apply closed_complement_open.
 rewrite Complement_Complement.
 apply compact_closed.
 apply MetricTopology_Hausdorff.
-Print continuous_factorization.
 have h_img: forall x:point_set Xt, In (Im Full_set h) (h x).
 move=>x.
 by apply Im_intro with x.
-Check continuous_surj_factorization.
 set hf:= @continuous_factorization Xt Yt h (Im Full_set h) h_img.
 apply compact_image with hf.
 by apply X_compact.
@@ -1840,7 +1781,6 @@ apply open_ball_in_open.
 by apply InCImhy.
 by apply CImh_open.
 destruct y_r as [r [r_pos IncObCImh]]. 
-Check closure_impl_meets_every_open_neighborhood.
 have fH_hP_r: Inhabited (
   Intersection fH (open_ball (point_set CMapt) um hP r)).  
 apply closure_impl_meets_every_open_neighborhood with hP.
@@ -1880,7 +1820,6 @@ by apply d'_metric.
 have InCImh_hx1: In (Complement (Im Full_set h)) (h x1).
 by apply IncObCImh.
 destruct InCImh_hx1.
-Print Im.
 by apply Im_intro with x1.
 by apply c_h.
 move=>x.
