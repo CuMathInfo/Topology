@@ -1,4 +1,5 @@
 (** *** The Baire Category Theorem for complete metric spaces  by  Ken'ichi Kuga ****)
+(** Simplified using SSReflect by Mitsuharu Yamamoto **) 
 (** ***************************************************************
 
 Theorem BaireCategoryTheorem :  complete d d_metric -> baire_space. 
