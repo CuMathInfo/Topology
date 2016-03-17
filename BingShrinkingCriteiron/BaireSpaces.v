@@ -231,16 +231,14 @@ Lemma open_ball_is_open:
   forall (x: point_set X) (r: R), 
     r > 0 -> open (open_ball (point_set X) d x r).
 Proof.
-  move=> x r H_r_pos.
+move=> x r H_r_pos.
 have H_In_MTOB_oball:
   In (metric_topology_neighborhood_basis d x)
      (open_ball (point_set X) d x r) 
   by apply: intro_open_ball.
-have H_ON_oball : open_neighborhood (open_ball (point_set X) d x r) x.
-apply:  (open_neighborhood_basis_elements (metric_topology_neighborhood_basis d x) x).
-by apply: d_metrizes.
-assumption.
-by destruct H_ON_oball.
+have: open_neighborhood (open_ball (point_set X) d x r) x.
+  by apply: (open_neighborhood_basis_elements (metric_topology_neighborhood_basis d x) x).
+by case.
 Qed.
 
 Lemma open_ball_in_open_set:
@@ -250,19 +248,13 @@ Lemma open_ball_in_open_set:
       Included (open_ball (point_set X) d x r) U. 
 Proof.
 move=> x U open_U In_U_x.
-have Hoball: exists oball : Ensemble (point_set X),
+have [oball [[r H_rpos] HbInU]]:
+  exists oball : Ensemble (point_set X),
         In (metric_topology_neighborhood_basis d x ) oball /\
-        Included oball U.
-apply: (open_neighborhood_basis_cond
-         (metric_topology_neighborhood_basis d x) x (d_metrizes x)).
-red; split. 
-assumption.
-assumption.
-destruct Hoball as [oball H_oball].
-destruct H_oball as [HmNb HbInU].
-destruct HmNb as [r H_rpos].
-exists r.
-by move: H_rpos HbInU.
+        Included oball U
+  by apply: (open_neighborhood_basis_cond
+               (metric_topology_neighborhood_basis d x) x (d_metrizes x)).
+by exists r.
 Qed.
 
 Definition closed_ball (x0 : point_set X) (r : R):
@@ -272,82 +264,27 @@ Definition closed_ball (x0 : point_set X) (r : R):
 Lemma closed_ball_is_closed :
   forall (x0: point_set X) (r: R), closed (closed_ball x0 r). 
 Proof. 
-move=> x0 r0.
-red.
+move=> x0 r0; rewrite /closed.
 set cover := fun (xd: { x: point_set X | d x0 x > r0 }%type) =>
   open_ball (point_set X) d (proj1_sig xd) (d x0 (proj1_sig xd) - r0).  
-have cplmt_as_union:
-  Complement (closed_ball x0 r0) = IndexedUnion cover.
-apply: Extensionality_Ensembles; red; split.
-red. 
-move=> x In_C_c_x.
-have cplmt_x : ~ In (closed_ball x0 r0) x.
-by apply: In_C_c_x.
-have not_dx0x_le_r0: d x0 x <= r0 -> False.
-have Hcb: d x0 x <= r0 -> (closed_ball x0 r0) x by auto.
-have Hncb: (closed_ball x0 r0) x -> False by apply: cplmt_x.
-move: Hcb Hncb; tauto.
-have dx0x_gt_r0 : d x0 x > r0 by apply: Rnot_le_gt.
-clear In_C_c_x cplmt_x not_dx0x_le_r0.
-have xd_exists : 
-  exists xd : { x: point_set X | d x0 x > r0 }, proj1_sig xd = x.
-exists (exist (fun y : point_set X => d x0 y > r0) x dx0x_gt_r0).
-auto. 
-destruct xd_exists as [xd].
-have cx : In (cover xd) x.
-constructor.
-rewrite H.
-rewrite metric_zero.
-apply: Rlt_move_pl2mr.
-apply: Rgt_lt.
-rewrite Rplus_0_l.
-exact.
-assumption.
-apply (indexed_union_intro cover xd).  
-exact.
-red.
-move=> x InIndUx.
-destruct InIndUx.
-destruct H.
-have H1 : d x0 (proj1_sig a) > r0.
-apply (proj2_sig a). 
-have Ht: d x0 x >= (d x0 (proj1_sig a)) - (d (proj1_sig a) x).
-have h_tmp: d (proj1_sig a) x = d x (proj1_sig a) by apply metric_sym.
-rewrite h_tmp. clear h_tmp.
-apply: Rge_move_pl2mr.
-apply Rle_ge.
-apply triangle_inequality.
-assumption.
-apply Rlt_move_mr2pl in H.
-rewrite Rplus_comm in H.
-apply Rlt_move_pl2mr in H.
-apply Rlt_gt in H. 
-have H2: d x0 x > r0.
-apply Rge_gt_trans with (r2:= d x0 (proj1_sig a) - d (proj1_sig a) x).
-exact.
-exact.
-red.
-red.
-red.
-move=> InCbx.
-destruct InCbx.
-apply Rgt_not_le in H2.
-apply Rlt_le in H0.
-move: H0 H2.
-tauto.
-apply Rgt_not_le in H2.
-apply Req_le in H0.
-move: H0 H2.
-tauto.
-have HoU: open (IndexedUnion cover).
-apply open_indexed_union.
-move=>xd.
-apply: open_ball_is_open.
-apply Rgt_move_pr2ml.
-rewrite Rplus_0_l.
-apply (proj2_sig xd).
-rewrite cplmt_as_union.
-exact.
+suff ->: Complement (closed_ball x0 r0) = IndexedUnion cover.
+- apply: open_indexed_union => xd.
+  apply: open_ball_is_open.
+  apply: Rgt_minus.
+  exact: (proj2_sig xd).
+- apply: Extensionality_Ensembles; split.
+  + move=> x /Rnot_le_gt dx0x_gt_r0.
+    apply: (indexed_union_intro _ (exist _ x dx0x_gt_r0)).
+    constructor => //=.
+    rewrite metric_zero //.
+    exact: Rgt_minus.
+  + move=> _ [a x [/Rlt_move_mr2pl]].
+    rewrite (metric_sym _ _ d_metric) Rplus_comm => /Rlt_move_pl2mr H.
+    apply: Rgt_not_le.
+    apply: Rge_gt_trans H.
+    apply: Rge_move_pl2mr.
+    apply: Rle_ge.
+    exact: triangle_inequality.
 Qed.
 
 (* The Baire Category Theorem for complete metric spaces *)
