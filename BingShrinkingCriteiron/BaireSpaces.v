@@ -190,131 +190,40 @@ Qed.
 
 Lemma Rle_pow_inv2_1: forall n:nat, (/2)^n <= 1.
 Proof.
-induction n.
-simpl.
-by auto with *.
-have H: S n = (n + 1)%nat by auto with *.
-rewrite H; clear H.
-have H1: (/2)^(n + 1)= (/2)^n * (/2)^1 by auto with *.
-rewrite H1; clear H1.
-simpl.
-have H2: (/2)^n * (/2 * 1) <= 1 * (/2 * 1).
-move: IHn.
-apply Rmult_le_compat_r.
-rewrite Rmult_1_r.
-auto with *.
-apply Rle_trans with (1*(/2 * 1)).
-assumption.
-rewrite Rmult_1_l.
-rewrite Rmult_1_r.
-fourier.
+move=> n.
+rewrite -[x in _ <= x](pow1 n).
+apply: pow_incr.
+split; first auto with real.
+rewrite -[x in _ <= x]Rinv_1.
+by apply: Rinv_le_contravar; auto with real.
 Qed.
 
 (*************************************************)
 
 Lemma Rle_n_pow_2_n: forall n:nat,  (INR n) <= (2^n).
 Proof.
-induction n.
-simpl.
-by auto with *.
-have H: S n = (n + 1)%nat by auto with *.
-rewrite H; clear H.
-have H1: INR (n + 1)%nat = (INR n) + (INR 1) by auto with *.
-rewrite H1; clear H1.
-have H2: 2^(n + 1) = 2^n * 2^1 by auto with *.
-rewrite H2; clear H2.
-simpl.
-rewrite Rmult_1_r.
-have H3: INR n + 1 <= 2^n + 1 by apply Rplus_le_compat_r.
-apply Rle_trans with (2^n + 1).
-assumption. clear H3.
-have H4: 2^n * 2 = 2^n + 2^n by field.
-rewrite H4; clear H4.
-apply Rplus_le_compat_l.
-clear IHn.
-induction n.
-simpl.
-by auto with *.
-have H: S n = (n + 1)%nat by auto with *.
-rewrite H; clear H.
-have H2: 2^(n + 1) = 2^n * 2^1 by auto with *.
-rewrite H2; clear H2.
-simpl.
-fourier.
+elim => [| n IHn] ; first auto with real.
+rewrite [in x in x <= _](_ : S n = (n + 1)%nat); last by auto with *.
+rewrite (_ : INR (n + 1) = INR n + INR 1); last by auto with real.
+move/Rplus_le_compat_r: IHn => /(_ 1) /= H.
+apply: Rle_trans H _.
+rewrite (_ : 2 * 2 ^ n = 2 ^ n + 2 ^ n); last by field.
+apply: Rplus_le_compat_l.
+apply: pow_R1_Rle.
+by auto with real.
 Qed.
 
 Lemma pow_inv_2_n_approach_0: forall eps : R, eps > 0 ->
   exists N : nat, forall n : nat, (n >= N)%nat -> (/2)^n <= eps.
 Proof.
 move=> eps eps_pos.
-have H: exists N: nat, (N>0)%nat /\ /(INR N) < eps. 
-apply inverses_of_nats_approach_0 with (eps:=eps).
-assumption.
-destruct H as [N].
-exists N.
-move=> n lenN.
-destruct H.
-have H1: (/2)^n <= (/2)^N.
-have H2: n = ((n - N) + N)%nat by auto with *.
-rewrite H2; clear H2.
-have H3: (/2)^(n-N+N) = (/2)^(n-N)*(/2)^N by auto with *.
-rewrite H3; clear H3.
-have H4: (/2)^(n-N) <= 1.
-auto with *.
-set k:= (n - N)%nat.
-induction k.
-simpl.
-by auto with *.
-have H5: S k = (k + 1)%nat by auto with *.
-rewrite H5; clear H5.
-have H6: (/2)^(k+1) = (/2)^k*(/2)^1 by auto with *.
-rewrite H6; clear H6.
-simpl.
-have H7: (/2)^k*(/2) <= 1*(/2).
-apply Rmult_le_compat_r.
-by auto with *.
-assumption.
-rewrite Rmult_1_r.
-rewrite Rmult_1_l in H7.
-apply Rle_trans with (/2).
-assumption.
-fourier.
-have H8: (/2)^(n-N)*(/2)^N <= 1* (/2)^N.
-apply Rmult_le_compat_r.
-have H9: 0 < (/2)^N by auto with real.
-move: H9.
-by auto with *.
-assumption.
-rewrite Rmult_1_l in H8.
-move: H8.
-by auto with *.
-have H10: (/2)^N <= /(INR N).
-have H11: (/2)^N = /(2^N).
-apply eq_sym.
-apply Rinv_pow.
-pose proof Rlt_R0_R2 as H12.
-move:H12.
-auto with *.
-clear H11.
-apply Rle_trans with ((/2)^N).
-auto with *.
-have H13: /(2^N) = (/2)^N.
-apply Rinv_pow.
-pose proof Rlt_R0_R2 as H14.
-move:H14.
-auto with *.
-rewrite <- H13.
-apply Rle_Rinv.
-move: H.
-by auto with *.
-by auto with *.
-apply Rle_n_pow_2_n.
-apply Rle_trans with ((/2)^N).
-assumption.
-apply Rle_trans with (/ INR N).
-assumption.
-move:H0.
-by auto with *.
+case: (inverses_of_nats_approach_0 _ eps_pos) => N [HNpos HNlt].
+exists N => n lenN.
+move/Rlt_le: HNlt; apply: Rle_trans.
+rewrite -Rinv_pow; last by discrR.
+apply: Rinv_le_contravar; first auto with real.
+apply: Rle_trans (Rle_n_pow_2_n _).
+by auto with real.
 Qed.
 
 (*************************************************)
