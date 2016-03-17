@@ -70,207 +70,122 @@ reflexivity.
 Qed.
 
 
-Lemma Rm2p: forall r1 r2 : R, r1 - r2 = r1 + -r2.
-Proof. move=> r1 r2; auto. Qed.
-
 Lemma Req_move_pr2ml: forall r1 r2 r : R, r1 = r2 + r -> r1 - r = r2.
 Proof.
-move=> r1 r2 r lhs. rewrite Rm2p. 
-have H: r1 + -r = r2 + r + -r. 
-move: lhs. auto with real.
-rewrite H. 
-rewrite Rplus_assoc.
-rewrite Rplus_opp_r.
-rewrite Rplus_0_r.
-reflexivity.
+move=> r1 r2 r ->.
+by rewrite /Rminus Rplus_assoc Rplus_opp_r Rplus_0_r. 
 Qed.
 
 Lemma Req_move_pl2mr: forall r1 r2 r : R, r1 + r = r2 -> r1 = r2 - r.
 Proof.
-move=> r1 r2 r lhs.
-apply eq_sym.
-apply Req_move_pr2ml.
-by apply eq_sym.
+by move=> r1 r2 r; symmetry; apply: Req_move_pr2ml; symmetry.
 Qed.
 
 Lemma Req_move_mr2pl: forall r1 r2 r : R, r1 = r2 - r -> r1 + r = r2.
 Proof.
-move=> r1 r2 r lhs.
-rewrite Rm2p in lhs.
-have H: r1 + r = r2 + -r + r.
-move: lhs.
-auto with real.
-rewrite Rplus_assoc in H.
-have H0: -r + r = 0 by auto with real.
-rewrite H0 in H.
-rewrite Rplus_0_r in H.
-exact.
+move=> r1 r2 r ->.
+by rewrite /Rminus Rplus_assoc Rplus_opp_l Rplus_0_r. 
 Qed.
 
 Lemma Req_move_ml2pr: forall r1 r2 r : R, r1 - r = r2 -> r1 = r2 + r.
 Proof.
-move=> r1 r2 r lhs.
-apply eq_sym.
-apply Req_move_mr2pl.
-by apply eq_sym.
+by move=> r1 r2 r; symmetry; apply: Req_move_mr2pl; symmetry.
 Qed.
 
 Lemma Rle_move_pr2ml: forall r1 r2 r : R, r1 <= r2 + r -> r1 - r <= r2.
 Proof.
-move=> r1 r2 r lhs. rewrite Rm2p. 
-have H: r1 + -r <= r2 + r + -r. 
-move: lhs. auto with real.
-rewrite Rplus_assoc in H.
-rewrite Rplus_opp_r in H.
-rewrite Rplus_0_r in H. 
-exact.
+move=> r1 r2 r lhs.
+rewrite /Rminus (_ : r2 = r2 + r + -r); first auto with real.
+by rewrite Rplus_assoc Rplus_opp_r Rplus_0_r.
 Qed.
 
 Lemma Rle_move_pl2mr: forall r1 r2 r : R, r1 + r <= r2 -> r1 <= r2 - r.
 Proof.
-move=> r1 r2 r lhs. rewrite Rm2p.
-have H: r1 + r + - r <= r2 + - r.
-move: lhs. auto with real.
-rewrite Rplus_assoc in H.
-rewrite Rplus_opp_r in H. 
-rewrite Rplus_0_r in H. 
-exact.
+move=> r1 r2 r lhs.
+rewrite /Rminus (_ : r1 = r1 + r + -r ); first auto with real.
+by rewrite Rplus_assoc Rplus_opp_r Rplus_0_r.
 Qed.
 
 Lemma Rle_move_mr2pl: forall r1 r2 r : R, r1 <= r2 - r -> r1 + r <= r2.
 Proof.
 move=> r1 r2 r lhs. 
-rewrite Rm2p in lhs.
-have H: r1 + r <= r2 + -r + r.
-move: lhs.
-auto with real.
-rewrite Rplus_assoc in H.
-have H0: -r + r = 0 by auto with real.
-rewrite H0 in H.
-rewrite Rplus_0_r in H.
-exact.
+rewrite /Rminus (_ : r2 = r2 + -r + r); first auto with real.
+by rewrite Rplus_assoc Rplus_opp_l Rplus_0_r.
 Qed.
 
 Lemma Rle_move_ml2pr: forall r1 r2 r : R, r1 - r <= r2 -> r1 <= r2 + r.
 Proof.
-move=> r1 r2 r lhs. rewrite Rm2p in lhs.
-have H: r1 + - r +r <= r2 +  r.
-move: lhs. auto with real.
-rewrite Rplus_assoc in H.
-rewrite Rplus_opp_l in H. 
-rewrite Rplus_0_r in H. 
-exact.
+move=> r1 r2 r lhs. 
+rewrite /Rminus (_ : r1 = r1 + -r + r); first auto with real.
+by rewrite Rplus_assoc Rplus_opp_l Rplus_0_r.
 Qed.
 
 Lemma Rlt_move_pr2ml: forall r1 r2 r : R, r1 < r2 + r -> r1 - r < r2.
 Proof.
-move=> r1 r2 r lhs. rewrite Rm2p. 
-have H: r1 + -r < r2 + r + -r. 
-move: lhs. auto with real.
-rewrite Rplus_assoc in H.
-rewrite Rplus_opp_r in H.
-rewrite Rplus_0_r in H. 
-exact.
+move=> r1 r2 r lhs.
+rewrite /Rminus (_ : r2 = r2 + r + -r); first auto with real.
+by rewrite Rplus_assoc Rplus_opp_r Rplus_0_r.
 Qed.
 
 Lemma Rlt_move_pl2mr: forall r1 r2 r : R, r1 + r < r2 -> r1 < r2 - r.
 Proof.
-move=> r1 r2 r lhs. rewrite Rm2p.
-have H: r1 + r + - r < r2 + - r.
-move: lhs. auto with real.
-rewrite Rplus_assoc in H.
-rewrite Rplus_opp_r in H. 
-rewrite Rplus_0_r in H. 
-exact.
+move=> r1 r2 r lhs.
+rewrite /Rminus (_ : r1 = r1 + r + -r ); first auto with real.
+by rewrite Rplus_assoc Rplus_opp_r Rplus_0_r.
 Qed.
 
 Lemma Rlt_move_mr2pl: forall r1 r2 r : R, r1 < r2 - r -> r1 + r < r2.
 Proof.
 move=> r1 r2 r lhs. 
-rewrite Rm2p in lhs.
-have H: r1 + r < r2 + -r + r.
-move: lhs.
-auto with real.
-rewrite Rplus_assoc in H.
-have H0: -r + r = 0 by auto with real.
-rewrite H0 in H.
-rewrite Rplus_0_r in H.
-exact.
+rewrite /Rminus (_ : r2 = r2 + -r + r); first auto with real.
+by rewrite Rplus_assoc Rplus_opp_l Rplus_0_r.
 Qed.
 
 Lemma Rlt_move_ml2pr: forall r1 r2 r : R, r1 - r < r2 -> r1 < r2 + r.
 Proof.
-move=> r1 r2 r lhs. rewrite Rm2p in lhs.
-have H: r1 + - r +r < r2 +  r.
-move: lhs. auto with real.
-rewrite Rplus_assoc in H.
-rewrite Rplus_opp_l in H. 
-rewrite Rplus_0_r in H. 
-exact.
+move=> r1 r2 r lhs. 
+rewrite /Rminus (_ : r1 = r1 + -r + r); first auto with real.
+by rewrite Rplus_assoc Rplus_opp_l Rplus_0_r.
 Qed.
 
 Lemma Rge_move_pr2ml: forall r1 r2 r : R, r1 >= r2 + r -> r1 - r >= r2.
 Proof.
-move=> r1 r2 r lhs. 
-apply Rle_ge. 
-apply Rge_le in lhs. 
-by apply Rle_move_pl2mr. 
+by move=> r1 r2 r /Rge_le /Rle_move_pl2mr /Rle_ge.
 Qed.
 
 Lemma Rge_move_pl2mr: forall r1 r2 r : R, r1 + r >= r2 -> r1 >= r2 - r.
 Proof.
-move=> r1 r2 r lhs. 
-apply Rle_ge. 
-apply Rge_le in lhs. 
-by apply Rle_move_pr2ml. 
+by move=> r1 r2 r /Rge_le /Rle_move_pr2ml /Rle_ge.
 Qed.
 
 Lemma Rge_move_mr2pl: forall r1 r2 r : R, r1 >= r2 - r -> r1 + r >= r2.
 Proof.
-move=> r1 r2 r lhs. 
-apply Rle_ge. 
-apply Rge_le in lhs. 
-by apply Rle_move_ml2pr. 
+by move=> r1 r2 r /Rge_le /Rle_move_ml2pr /Rle_ge.
 Qed.
 
 Lemma Rge_move_ml2pr: forall r1 r2 r : R, r1 - r >= r2 -> r1 >= r2 + r.
 Proof.
-move=> r1 r2 r lhs. 
-apply Rle_ge. 
-apply Rge_le in lhs. 
-by apply Rle_move_mr2pl. 
+by move=> r1 r2 r /Rge_le /Rle_move_mr2pl /Rle_ge.
 Qed.
 
 Lemma Rgt_move_pr2ml: forall r1 r2 r : R, r1 > r2 + r -> r1 - r > r2.
 Proof.
-move=> r1 r2 r lhs. 
-apply Rlt_gt. 
-apply Rgt_lt in lhs. 
-by apply Rlt_move_pl2mr. 
+by move=> r1 r2 r /Rlt_move_pl2mr.
 Qed.
 
 Lemma Rgt_move_pl2mr: forall r1 r2 r : R, r1 + r > r2 -> r1 > r2 - r.
 Proof.
-move=> r1 r2 r lhs. 
-apply Rlt_gt. 
-apply Rgt_lt in lhs. 
-by apply Rlt_move_pr2ml. 
+by move=> r1 r2 r /Rlt_move_pr2ml.
 Qed.
 
 Lemma Rgt_move_mr2pl: forall r1 r2 r : R, r1 > r2 - r -> r1 + r > r2.
 Proof.
-move=> r1 r2 r lhs. 
-apply Rlt_gt. 
-apply Rgt_lt in lhs. 
-by apply Rlt_move_ml2pr. 
+by move=> r1 r2 r /Rlt_move_ml2pr.
 Qed.
 
 Lemma Rgt_move_ml2pr: forall r1 r2 r : R, r1 - r > r2 -> r1 > r2 + r.
 Proof.
-move=> r1 r2 r lhs. 
-apply Rlt_gt. 
-apply Rgt_lt in lhs. 
-by apply Rlt_move_mr2pl. 
+by move=> r1 r2 r /Rlt_move_mr2pl. 
 Qed.
 
 Lemma Rle_pow_inv2_1: forall n:nat, (/2)^n <= 1.
@@ -752,10 +667,7 @@ simpl.
 have tmp: (n + 0)%nat = n by auto.
 rewrite tmp. clear tmp.
 rewrite metric_zero.
-have tmp: 1 - 1 = 0.
-rewrite Rm2p.
-auto with real.
-rewrite tmp.
+rewrite /Rminus Rplus_opp_r.
 rewrite Rmult_0_r.
 by auto with real.
 assumption.  
