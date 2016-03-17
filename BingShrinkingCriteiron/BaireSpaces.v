@@ -293,13 +293,10 @@ Qed.
 Theorem BaireCategoryTheorem :  complete d d_metric -> baire_space.
  
 Proof.
-move=> H_cplt.
-rewrite/baire_space /dense.
-move=> V H_od. 
-apply: Extensionality_Ensembles; split; red; intros.
-exact.
-apply: meets_every_open_neighborhood_impl_closure.
-move=> U H_opn_U H_In_U_x.
+
+move=> H_cplt V H_od.
+apply: Extensionality_Ensembles; split => // x H.
+apply: meets_every_open_neighborhood_impl_closure => U H_opn_U H_In_U_x.
 set (IStep (xrn0 xrn1: point_set X * { r:R | r > 0} * nat) := 
   snd xrn1 = S (snd xrn0) /\ 
   proj1_sig (snd (fst xrn1)) <= (proj1_sig (snd (fst xrn0))) * /2 /\
@@ -308,667 +305,243 @@ set (IStep (xrn0 xrn1: point_set X * { r:R | r > 0} * nat) :=
     (open_ball _ d (fst (fst xrn1)) (2*proj1_sig (snd (fst xrn1))))
     (V (snd xrn1))).
 (* step 0 *) 
-have H_V0U : Inhabited (Intersection (V 0%nat) U). 
-apply: dense_meets_every_nonempty_open.
-move: (H_od 0%nat).
-tauto.
-assumption.
-move: H_In_U_x.
-by apply Inhabited_intro.
-destruct H_V0U as [x0 H_V0U].
-apply (open_ball_in_open_set x0 (Intersection (V 0%nat) U)) in H_V0U.
-destruct H_V0U as [r0_t HrI].
-destruct HrI as [r0_t_pos Inc_ball_V0U].
+have [x0] : Inhabited (Intersection (V 0%nat) U)
+  by apply: dense_meets_every_nonempty_open => //;
+     [by case: (H_od 0%nat) | exact: Inhabited_intro H_In_U_x].
+case/open_ball_in_open_set;
+  first by apply open_intersection2 => //; case (H_od 0%nat).
+move=> r0_t [r0_t_pos Inc_ball_V0U].
 set r0:=r0_t/2.
-have r0_pos: r0>0.
-rewrite/r0.
-fourier.
+have r0_pos: r0>0 by rewrite /r0; fourier.
 set rp0 := exist (fun r:R => r>0)r0 r0_pos.
 (**** Axiom of Choice used *******)
-have CFun: exists Fn : nat -> point_set X * { r:R | r>0 } * nat,
- (Fn 0%nat) = (pair (pair x0 rp0) 0%nat) /\
- (forall n : nat, (IStep (Fn n) (Fn (S n)))).
-apply: FDC.
+- have [Fn [H_0 H_n]]: exists Fn : nat -> point_set X * { r:R | r>0 } * nat,
+    (Fn 0%nat) = (pair (pair x0 rp0) 0%nat) /\
+    (forall n : nat, (IStep (Fn n) (Fn (S n)))).
+  apply: FDC.
 (*********************************)
-(* step n *)
-move=> xrn.
-set xn := fst (fst xrn).
-set rn := proj1_sig (snd (fst xrn)).
-set rn_pos := proj2_sig (snd (fst xrn)).
-set nn := snd xrn.
-have H_Vn1B : Inhabited (Intersection (V (S nn)) (open_ball (point_set X) d xn (rn * /2))).  
-apply: dense_meets_every_nonempty_open.
-move: (H_od (S nn)).
-tauto.
-apply: open_ball_is_open.
-apply : eps2_Rgt_R0.
-by apply: rn_pos.
-exists xn.
-red.
-constructor.
-rewrite metric_zero.
-apply: Rgt_lt.
-apply: eps2_Rgt_R0.
-by apply: rn_pos.
-assumption.  
-destruct H_Vn1B as [yn H_In_Int_yn].
-apply (open_ball_in_open_set yn) in H_In_Int_yn.
-destruct H_In_Int_yn as [rn1_t HVSnyn].
-destruct HVSnyn as [rn1_t_pos HIbVnb].
-set (rn1 := Rmin (rn1_t/2) (rn* /2)).
-have rn1_pos: rn1 > 0.
-rewrite/rn1.
-apply/Rmin_Rgt; split.
-fourier.
-apply: eps2_Rgt_R0.
-by apply: rn_pos.
-set rpn1 := (exist (fun r:R => r > 0) rn1 rn1_pos).
-exists (pair (pair yn rpn1) (S nn)).
-rewrite/IStep.
-split.
-simpl.
-rewrite/nn.
-reflexivity.
-split.
-simpl.
-have Hrn: proj1_sig (snd (fst xrn)) = rn by auto.
-rewrite Hrn.
-rewrite/ rn1.
-by apply: Rmin_r.
-split.
-simpl.
-have Hrn: proj1_sig (snd (fst xrn)) = rn by auto.
-rewrite Hrn.
-have Hxn: (fst (fst xrn)) = xn by auto.
-rewrite Hxn.
-have HynInInt: In (Intersection (V (S nn)) (open_ball (point_set X) d xn (rn * /2))) yn.
-apply: HIbVnb.
-constructor.
-rewrite metric_zero.
-by apply: rn1_t_pos.
-assumption.
-destruct HynInInt as [yn HVSnyn Hbxnyn].
-destruct Hbxnyn.
-exact.
-simpl.
-red.
-move=>x1 In_rn1.
-have In_rn1_t : In (open_ball (point_set X) d yn rn1_t) x1.
-red.
-constructor.
-destruct In_rn1.
-have rn1_le_rn1_t_half: rn1 <= rn1_t/2.
-rewrite/rn1.
-by apply: Rmin_l.
-have : 2* rn1 <= rn1_t  by fourier.
-move: H0.
-by apply: Rlt_le_trans. 
-have In_Vb : In (Intersection (V (S nn))
+  (* step n *)
+  move=> xrn.
+  set xn := fst (fst xrn).
+  set rn := proj1_sig (snd (fst xrn)).
+  set rn_pos := proj2_sig (snd (fst xrn)).
+  set nn := snd xrn.
+  have [yn] : Inhabited (Intersection (V (S nn)) (open_ball (point_set X) d xn (rn * /2))).  
+  + apply: dense_meets_every_nonempty_open.
+    * by case: (H_od (S nn)).
+    * apply: open_ball_is_open.
+      exact: eps2_Rgt_R0.
+    * exists xn => /=; constructor.
+      rewrite /= metric_zero //.
+      exact: eps2_Rgt_R0.
+  + case/open_ball_in_open_set.
+    * apply: open_intersection2; first by case: (H_od (S nn)).
+      apply: open_ball_is_open.
+      exact: eps2_Rgt_R0.
+    * move=> rn1_t [rn1_t_pos HIbVnb].
+      set rn1 := Rmin (rn1_t/2) (rn* /2).
+      have rn1_pos: rn1 > 0
+        by rewrite /rn1; apply/Rmin_Rgt; split; apply: eps2_Rgt_R0.
+      set rpn1 := exist (fun r:R => r > 0) rn1 rn1_pos.
+      exists (yn, rpn1, S nn).
+      repeat split => /=; [ by apply: Rmin_r | | ].
+      - rewrite -/rn -/xn.
+        have: In (Intersection (V (S nn)) (open_ball (point_set X) d xn (rn * /2))) yn
+          by apply: HIbVnb; constructor; rewrite metric_zero.
+        by case => [? _ []].
+      - move=>x1 In_rn1.
+        have In_rn1_t : In (open_ball (point_set X) d yn rn1_t) x1.
+        + constructor.
+          case: In_rn1 => Hlt.
+          apply: Rlt_le_trans Hlt _.
+          have rn1_le_rn1_t_half: rn1 <= rn1_t/2 by apply: Rmin_l.
+          by fourier.
+        + have: In (Intersection (V (S nn))
                    (open_ball (point_set X) d xn (rn * /2))) x1
-by apply: HIbVnb.
-destruct In_Vb.
-assumption.
-apply: open_intersection2.
-move: (H_od (S nn)).
-tauto.
-apply: open_ball_is_open.
-apply: eps2_Rgt_R0.
-exact.
-destruct CFun as [Fn H_I].
-destruct H_I as [H_0 H_n]. 
+            by apply: HIbVnb.
+          by case.
 (* sequences and properties obtained so far*)
-set (x_n (n : DS_set nat_DS) := fst (fst (Fn n))).
-have x_n_0 : x_n 0%nat = x0.
-have h_tmp: x_n 0%nat = fst (fst (Fn 0%nat)) by auto.
-rewrite h_tmp; clear h_tmp.
-rewrite H_0.
-auto.
-set (r_n (n : nat) := proj1_sig (snd (fst (Fn n)))).
-have r_n_0 : r_n 0%nat = r0.
-have h_tmp: r_n 0%nat = proj1_sig (snd (fst (Fn 0%nat))) by auto.
-rewrite h_tmp; clear h_tmp.
-rewrite H_0.
-auto.
-have r_n_pos : forall n : nat, r_n n > 0.
-move=>n.
-pose proof (proj2_sig (snd (fst (Fn n)))).
-simpl in H0.
-have h_tmp: (r_n n) = proj1_sig (snd (fst (Fn n))) by auto.
-by rewrite h_tmp; clear h_tmp.
-have r_n_r_Sn : forall n : nat, r_n (S n) <= (r_n n)* /2.
-move=> n.
-pose proof (H_n n).
-destruct H0.
-destruct H1.
-have h_tmp: r_n (S n) = proj1_sig (snd (fst (Fn (S n)))) by auto.
-rewrite h_tmp; clear h_tmp.
-have h_tmp: r_n n = proj1_sig (snd (fst (Fn n))) by auto.
-rewrite h_tmp; clear h_tmp.
-assumption.
-have r_n_r_ni : forall n i : nat, r_n (n+i)%nat <= r_n n * (/2)^i.
-move=> n.
-induction i.
-simpl.
-have h_tmp: (n + O)%nat = n by auto.
-rewrite h_tmp; clear h_tmp.
-have h_tmp: r_n n * 1 = r_n n by auto with real.
-rewrite h_tmp; clear h_tmp.
-auto with real.
-simpl.
-have h_tmp: (n + S i)%nat = S (n + i) by auto.
-rewrite h_tmp; clear h_tmp.
-have h_trans: 
-   r_n (S (n + i)) <= r_n (n + i)%nat * /2
-->  r_n (n + i)%nat * /2   <= r_n n * (/ 2 * (/ 2) ^ i)
- ->  r_n (S (n + i)) <= r_n n * (/ 2 * (/ 2) ^ i) by apply Rle_trans.
-apply h_trans; clear h_trans.
-apply: r_n_r_Sn. 
-have h_tmp: r_n n * (/2 * (/2)^i) = r_n n * (/2)^i * (/2).
-have h_tmp1: /2 * (/2)^i = (/2)^i * /2 by auto with real. 
-rewrite h_tmp1; clear h_tmp1.
-auto with real.
-rewrite h_tmp; clear h_tmp.
-move: IHi.
-apply: Rmult_le_compat_r.
-auto with real.
-have x_n_x_Sn_r_n : forall n : nat,
-  d (x_n n) (x_n (S n)) < (r_n n) * /2. 
-move=>n.
-pose proof (H_n n) as H_In. 
-destruct H_In as [_ H_In].
-destruct H_In as [_ H_In].
-have h_tmp: r_n n = proj1_sig (snd (fst (Fn n))) by auto.
-rewrite h_tmp; clear h_tmp.
-have h_tmp: x_n n = fst (fst (Fn n)) by auto.
-rewrite h_tmp; clear h_tmp.
-have h_tmp: x_n (S n) = fst (fst (Fn (S n))) by auto.
-rewrite h_tmp; clear h_tmp.
-move: H_In.
-tauto. 
-have x_ni_x_nSi_r_n :
-forall n i : nat, 
-  d (x_n (n+i)%nat) (x_n (n + (S i))%nat) < (r_n n)* /2 * (/2)^i.
-move=>n i.
-have h_trans:
-  d (x_n (n+i)%nat) (x_n (n + (S i))%nat) < r_n (n+i)%nat * /2 
-->
- r_n (n+i)%nat * /2 <= (r_n n)* /2 * (/2)^i
-->
- d (x_n (n+i)%nat) (x_n (n + (S i))%nat) < (r_n n)* /2 * (/2)^i
-by apply:Rlt_le_trans.
-apply h_trans; clear h_trans.
-have h_tmp: (n + S i)%nat = S (n + i)%nat by auto with real. 
-rewrite h_tmp; clear h_tmp.
-apply: x_n_x_Sn_r_n.
-have h_tmp: r_n n * /2 * (/2)^i = r_n n * (/2)^i * /2 by field.
-rewrite h_tmp; clear h_tmp.
-have h_tmp: r_n (n + i)%nat  <= r_n n * (/ 2) ^ i by apply: r_n_r_ni.
-move:h_tmp.
-apply: Rmult_le_compat_r.
-by auto with real.
-have x_n_x_nk: forall n : nat, 
-           forall k : nat, d (x_n n%nat) (x_n (n+k)%nat) <= r_n n * (1 - (/2)^k). 
-move=>n.
-induction k.
-simpl.
-have tmp: (n + 0)%nat = n by auto.
-rewrite tmp. clear tmp.
-rewrite metric_zero.
-rewrite /Rminus Rplus_opp_r.
-rewrite Rmult_0_r.
-by auto with real.
-assumption.  
-have tri : d (x_n n) (x_n (n + (S k))%nat) <= 
-            d (x_n n) (x_n (n + k)%nat) + d (x_n (n + k)%nat) (x_n (n + (S k))%nat).
-apply triangle_inequality.
-assumption.
-have tmp:  d (x_n n) (x_n (n + k)%nat) + d (x_n (n + k)%nat) (x_n (n + (S k))%nat) <=
-                  r_n n * (1 - (/2)^k) + d (x_n (n + k)%nat) (x_n (n + (S k))%nat).
-apply Rplus_le_compat_r.
-by apply IHk.
-have tri2: d (x_n n) (x_n (n + (S k))%nat) <= 
-      r_n n * (1 - (/2)^k) + d (x_n (n + k)%nat) (x_n (n + (S k))%nat).
-apply Rle_trans with
-  (r2:= d (x_n n) (x_n (n + k)%nat) + d (x_n (n + k)%nat) (x_n (n + (S k))%nat)).
-apply tri.
-apply tmp.
-clear tri tmp.
-have tmp : d (x_n (n + k)%nat) (x_n (n + S k)%nat) < r_n n * /2 * (/2)^k by apply x_ni_x_nSi_r_n.
-have tmp1 :  r_n n * (1 - (/ 2) ^ k) + d (x_n (n + k)%nat) (x_n (n + S k)%nat) <
-                       r_n n * (1 - (/ 2) ^ k) + r_n n * /2 * (/2)^k.
-apply Rplus_lt_compat_l.
-by apply tmp.
-have tmp2 : d (x_n n) (x_n (n + S k)%nat) < r_n n * (1 - (/ 2) ^ k) + r_n n * / 2 * (/ 2) ^ k.
-apply Rle_lt_trans with (r2 :=r_n n * (1 - (/ 2) ^ k) + d (x_n (n + k)%nat) (x_n (n + S k)%nat) ).
-apply tri2.
-by apply tmp1.
-have ineq : r_n n * (1 - (/ 2) ^ k) + r_n n * / 2 * (/ 2) ^ k 
-          <=  r_n n * (1 - (/ 2) ^ S k).
-have tmp3:  r_n n * (1 - (/ 2) ^ k) + r_n n * / 2 * (/ 2) ^ k 
-  = r_n n * ((1 - (/ 2) ^ k) +  / 2 * (/ 2) ^ k). 
-rewrite  Rmult_plus_distr_l.
-have tmp4: r_n n * (/2 * (/2)^k) = r_n n * /2 *(/2)^k.
-rewrite Rmult_assoc.
-reflexivity.
-rewrite tmp4.
-reflexivity.
-rewrite tmp3.
-apply Rmult_le_compat_l.
-have tmp5: 0 < r_n n.
-apply Rgt_lt.
-by apply r_n_pos. 
-move: tmp5.
-apply Rlt_le.
-clear tmp tmp1 tmp2 tmp3.
-apply Rle_move_mr2pl.
-apply Rle_move_pr2ml.
-have tmp:
-  0 <=  0 - (/ 2) ^ S k - / 2 * (/ 2) ^ k + (/ 2) ^ k ->
-  1+0 <=  1 + (0 - (/ 2) ^ S k - / 2 * (/ 2) ^ k + (/ 2) ^ k) 
-                                   by apply Rplus_le_compat_l.
-have tmp1: 1 + 0 = 1 by apply Rplus_0_r.
-rewrite tmp1 in tmp. clear tmp1.
-have tmp2: 1 + (0 - (/ 2) ^ S k - / 2 * (/ 2) ^ k + (/ 2) ^ k)
-    = 1  - (/ 2) ^ S k - / 2 * (/ 2) ^ k + (/ 2) ^ k.
-field.
-rewrite tmp2 in tmp.
-apply tmp.
-clear tmp tmp2.
-have tmp3 : 0  - (/ 2) ^ S k - / 2 * (/ 2) ^ k + (/ 2) ^ k
- =  - (/ 2) ^ S k - / 2 * (/ 2) ^ k + (/ 2) ^ k.
-field. rewrite tmp3. clear tmp3.
-have tmp4: (/2)^S k = /2* (/2)^k by auto.
-rewrite tmp4. clear tmp4.
-have tmp3 : - (/ 2 * (/2)^k) - / 2 * (/ 2) ^ k + (/ 2) ^ k
- = (- /2 -/2 +1) * (/ 2) ^ k.
-field.
-rewrite tmp3. clear tmp3.
-have tmp4: -/2 -/2 +1 = 0 by field.
-rewrite tmp4. 
-rewrite Rmult_0_l.
-by auto with real.
-have Ineq: d (x_n n) (x_n (n + S k)%nat) < r_n n * (1 - (/ 2) ^ S k).
-apply Rlt_le_trans with (r2:= r_n n * (1 - (/ 2) ^ k) + r_n n * / 2 * (/ 2) ^ k).
-exact.
-exact.
-move: Ineq.
-by apply Rlt_le.
-have HCauchy: cauchy  d x_n. 
-red.
-move=> eps eps_pos.
-have HN: exists N:nat, forall n:nat, 
-      (n >=N)%nat -> (/2)^n <= (/r0) * (/2) * eps.  
-apply pow_inv_2_n_approach_0 with (eps:= (/r0) * (/2) * eps).
-apply Rmult_gt_0_compat.
-apply Rmult_gt_0_compat.
-apply Rlt_gt.
-apply Rinv_0_lt_compat.
-assumption.
-auto with *.
-assumption.
-destruct HN as [N HN].
-exists N.
-have Hn: forall n:nat, (n>=N)%nat -> d (x_n N) (x_n n) < r0 * ((/2)^N).
-move=>n ngeN.
-have tmp: n=(N+(n-N))%nat by auto with *.
-rewrite tmp; clear tmp.
-set k:= (n-N)%nat.
-have Hk: d(x_n N) (x_n (N+k)%nat) <= r_n N * (1-(/2)^k).
-apply x_n_x_nk.
-have HrN : r_n (0+N)%nat <= (r_n 0%nat) * (/2)^N  by apply r_n_r_ni. 
-simpl in HrN.
-rewrite r_n_0 in HrN.
-have HrN1: r_n N * (1 - (/2)^k) <= r0 * (/2)^N * (1-(/2)^k).
-move: HrN.
-apply Rmult_le_compat_r.
-apply Rle_move_pl2mr.
-rewrite Rplus_0_l. 
-by apply Rle_pow_inv2_1.
-have HrNk: d(x_n N) (x_n (N+k)%nat) <= r0 * (/2)^N * (1 - (/2)^k).
-apply Rle_trans with (r_n N * (1 - (/2)^k)).
-assumption.
-assumption.
-clear Hk HrN HrN1.
-have HrN2: r0 * (/2)^N * (1 - (/2)^k) < r0 * (/2)^N.
-have tmp3: r0 * (/2)^N = r0 * (/2)^N * 1 by auto with *. 
-rewrite {2} tmp3. clear tmp3.
-apply Rmult_lt_compat_l.
-have tmp4: 0 < r0.
-by apply Rgt_lt.
-have tmp5: 0< (/2)^N by auto with *.
-move: tmp4 tmp5.
-by apply Rmult_lt_0_compat.
-apply Rlt_move_pr2ml.
-rewrite Rplus_comm.
-apply Rlt_move_ml2pr.
-have tmp7: 1-1 = 0 by auto with *.
-rewrite tmp7; clear tmp7.
-by auto with *.
-apply Rle_lt_trans with (r0 * (/ 2) ^ N * (1 - (/ 2) ^ k)).
-assumption.
-assumption.
-move=>m1 n1 m1gtN n1gtN.
-have Tri: d (x_n m1) (x_n n1) <= d (x_n m1) (x_n N) + d (x_n N) (x_n n1) by apply triangle_inequality. 
-have Hdm1: d (x_n m1) (x_n N) < r0 * (/2)^N.
-rewrite metric_sym.
-apply Hn.
-assumption.
-assumption.
-have Hdn1: d (x_n N) (x_n n1) < r0 * (/2)^N.
-apply Hn.
-assumption.
-have Hsum: d (x_n m1) (x_n N) + d (x_n N) (x_n n1) < r0 * (/2)^N + r0 * (/2)^N.
-apply Rplus_lt_compat.
-assumption.
-assumption.
-have Hs : r0 * (/2)^N + r0 * (/2)^N = 2 * r0 * (/2)^N. 
-field.
-rewrite Hs in Hsum; clear Hs.
-clear Hdm1 Hdn1.
-have Htr: d (x_n m1) (x_n n1) < 2 * r0 * (/2)^N.
-apply Rle_lt_trans with (d (x_n m1) (x_n N) + d (x_n N) (x_n n1)).
-assumption.
-assumption.
-have Htr2: (/2)^N <= / r0 * /2 * eps by apply HN.
-have Htr3: 2 * r0 * (/2)^N <= 2 * r0 * /r0 * /2 * eps.
-have tmp4: 2 * r0 * /r0 * /2 * eps = 2 * r0 * (/r0 * /2 * eps).
-field.
-move: (r0_pos). 
-auto with *.
-rewrite tmp4; clear tmp4.
-apply Rmult_le_compat_l with (r:= 2 * r0).
-have r0pos: 0 <= r0.
-apply Rge_le.
-move: (r0_pos).
-auto with *.
-move: r0pos.
-have tmp: 0 = 2 * 0 by auto with *.
-rewrite {2} tmp.
-auto with *.
-assumption.
-clear Htr2.
-apply Rlt_le_trans with (2 * r0 * (/ 2) ^ N).
-assumption.
-have HNeps: (/2)^N <= / r0 * /2 * eps.
-apply HN. 
-auto with *.
-have HNeps2: (2 * r0) * (/2)^N <= (2 * r0) * (/r0 * /2 * eps).
-move: HNeps.
-apply Rmult_le_compat_l with (r:= 2 * r0).
-have r0pos: 0 <= r0.
-apply Rge_le.
-move: (r0_pos).
-auto with *.
-move: r0pos.
-have tmp: 0 = 2 * 0 by auto with *.
-rewrite {2} tmp.
-auto with *.
-have Hre: 2 * r0 * /r0 */2 * eps = eps. 
-have Hre1: 2 * /2 * eps = eps.
-have tmp: 2* /2 = 1 by field.
-have tmp2: r0 * /r0 = 1.
-field.
-move: (r0_pos).
-auto with *.
-rewrite tmp.
-rewrite Rmult_1_l.
-reflexivity.
-have tmp3: 2 * r0 * /r0 = 2 * (r0 * /r0).
-field.
-move: (r0_pos).
-auto with *.
-rewrite tmp3.
-have tmp4: r0 * /r0 = 1.
-auto with *.
-rewrite tmp4.
-clear tmp3 tmp4.
-have tmp5: 2*1 = 2 by field.
-rewrite tmp5.
-assumption.
-have tmp5: 2 * r0 * (/r0 * /2 * eps) = 2 * r0* /r0* /2 * eps.
-field.
-move: (r0_pos).
-by auto with *.
-rewrite tmp5 in HNeps2.
-rewrite Hre in HNeps2.
-assumption.
-(************************)
-destruct (H_cplt x_n) as [xL Lim].
-assumption.
+- set (x_n (n : DS_set nat_DS) := fst (fst (Fn n))).
+  have x_n_0 : x_n 0%nat = x0
+    by rewrite /x_n H_0.
+  set (r_n (n : nat) := proj1_sig (snd (fst (Fn n)))).
+  have r_n_0 : r_n 0%nat = r0
+    by rewrite /r_n H_0.
+  have r_n_pos : forall n : nat, r_n n > 0
+    by move => n; apply: proj2_sig.
+  have r_n_r_Sn : forall n : nat, r_n (S n) <= (r_n n) * /2.
+    by move=> n; case: (H_n n) => ? []. 
+  have r_n_r_ni : forall n i : nat, r_n (n+i)%nat <= r_n n * (/2)^i.
+  + move=> n.
+    elim=> [| i IHi] /=; first by rewrite -plus_n_O Rmult_1_r; apply: Rle_refl.
+    rewrite -plus_n_Sm.
+    apply: Rle_trans (r_n_r_Sn _) _.
+    rewrite (_ : /2 * (/2)^i = (/2)^i * /2); last by auto with real.
+    rewrite -Rmult_assoc.
+    apply: Rmult_le_compat_r => //.
+    by auto with real.
+  have x_n_x_Sn_r_n : forall n : nat, d (x_n n) (x_n (S n)) < (r_n n) * /2
+    by move=> n; case: (H_n n) => ? [? []].
+  have x_ni_x_nSi_r_n : forall n i : nat, 
+    d (x_n (n+i)%nat) (x_n (n + (S i))%nat) < (r_n n)* /2 * (/2)^i.
+  + move=> n i.
+    rewrite -plus_n_Sm.
+    apply: Rlt_le_trans (x_n_x_Sn_r_n _) _.
+    rewrite (_ : r_n n * /2 * (/2)^i = r_n n * (/2)^i * /2); last by field.
+    apply: Rmult_le_compat_r => //.
+    by auto with real.
+  have x_n_x_nk: forall n : nat, 
+    forall k : nat, d (x_n n%nat) (x_n (n+k)%nat) <= r_n n * (1 - (/2)^k). 
+  + move=> n.
+    elim=> [| k IHk] /=.
+    * rewrite -plus_n_O metric_zero // /Rminus Rplus_opp_r Rmult_0_r.
+      by auto with real.
+    * apply: Rle_trans (_ : _ <= d (x_n n) (x_n (n + k)%nat) + d (x_n (n + k)%nat) (x_n (n + (S k))%nat)) _;
+        first by apply triangle_inequality.
+      apply: Rle_trans (Rplus_le_compat_r _ _ _ IHk) _.
+      apply: Rlt_le.
+      apply: Rlt_le_trans (Rplus_lt_compat_l _ _ _ (x_ni_x_nSi_r_n _ _)) _.
+      rewrite Rmult_assoc -Rmult_plus_distr_l.
+      apply: Rmult_le_compat_l; first by apply: Rlt_le; apply: Rgt_lt.
+      by fourier.
+  have HCauchy: cauchy d x_n. 
+  + move=> eps eps_pos.
+    have [N HN]: exists N:nat, forall n:nat,
+          (n >=N)%nat -> (/2)^n <= (/r0) * (/2) * eps.  
+    * apply: pow_inv_2_n_approach_0.
+      by do !apply: Rmult_gt_0_compat => //; apply Rinv_0_lt_compat; auto with real.
+    exists N.
+    have Hn: forall n:nat, (n>=N)%nat -> d (x_n N) (x_n n) < r0 * ((/2)^N).
+    * move=>n ngeN.
+      rewrite (_ : n = (N + (n - N))%nat); last by auto with *.
+      set k := (n - N)%nat.
+      apply: Rle_lt_trans (x_n_x_nk _ _) _.
+      move: (r_n_r_ni 0%nat N) => /=.
+      rewrite r_n_0.
+      apply: Rlt_le_trans.
+      rewrite -[x in _ < x]Rmult_1_r.
+      apply: Rmult_lt_compat_l; first by apply: Rgt_lt.
+      apply: Rlt_move_pr2ml.
+      rewrite -[x in x < _]Rplus_0_r.
+      apply: Rplus_lt_compat_l.
+      by auto with real.
+    move=> m1 n1 m1gtN n1gtN.
+    apply: Rle_lt_trans (_ : _ <= d (x_n m1) (x_n N) + d (x_n N) (x_n n1)) _;
+      first by apply triangle_inequality. 
+    rewrite (metric_sym _ _ d_metric).
+    apply: Rlt_le_trans (Rplus_lt_compat _ _ _ _ (Hn _ m1gtN) (Hn _ n1gtN)) _.
+    rewrite [x in x <= _](_ : _ = 2 * r0 * (/2)^N); last by field.
+    apply: Rle_trans (Rmult_le_compat_l _ _ _ _ (HN N _)) _; first by fourier.
+    * auto with real.
+    * rewrite [x in x <= _](_ : _ = eps); first by auto with real.
+      field.
+      auto with real.
 (***********************)
-set D:= open_ball (point_set X) d xL r0.
-have HopenD: open D.
-(* simpl--DOES NOTHING HERE...BUT *)
-apply open_ball_is_open.
-assumption.
-destruct (Lim D).
-(* assumption. (* <-DESN'T WORK-*)*)
-simpl. (** THIS simpl REVEALS THIS open D ISN'T THAT open D**)
+  case: (H_cplt _ HCauchy) => xL Lim.
+(***********************)
+  set D:= open_ball (point_set X) d xL r0.
+  have HopenD: open D
+    by apply: open_ball_is_open.
+  case: (Lim D).
+(* assumption. (* <-DOESN'T WORK-*)*)
+  + rewrite /=. (** THIS simpl REVEALS THIS open D ISN'T THAT open D**)
 (*apply B_open_intro.*)
-set F:= Singleton D.
-have FD: D=FamilyUnion F.
-apply Extensionality_Ensembles; red; split.
-red. intros.
-apply (family_union_intro F D).
-apply In_singleton.
-assumption.  
-red.
-intros.
-destruct H0.
-SearchAbout Singleton.
-have tmp: D = S by apply Singleton_inv. 
-rewrite tmp; clear tmp.
-assumption.
-rewrite FD.
-apply (B_open_intro (point_set X) ).
-red.
-intros. 
-have temp2: D=x1 by apply Singleton_inv.
-apply eq_sym in temp2.
-rewrite temp2.
-rewrite temp2 in H0.
-apply indexed_union_intro with xL.
-red.
-constructor.
-assumption.
-constructor.
-rewrite metric_zero.
-assumption. 
-assumption.
-have nn_Vnn: forall n:nat, 
-  snd (Fn n) = n /\ Included (open_ball (point_set X) d (x_n n) (2*(r_n n))) (V n).
-induction n.
-split.
-by rewrite H_0.
-rewrite x_n_0.
-rewrite r_n_0.
-have temp: 2*r0 = r0_t.
-rewrite/r0.
-field.
-rewrite temp; clear temp.
-red.
-move=>z InObz.
-have InV0Uz : In (Intersection (V 0%nat) U) z.
-apply: Inc_ball_V0U.
-assumption.
-destruct InV0Uz.
-assumption.
-pose proof (H_n n).
-destruct H1 as [Hn_Sn Hn_V].
-destruct Hn_V as [_ Hn_V].
-destruct Hn_V as [_ Hn_V].
-destruct IHn as [Hn_n _]. 
-split.
-rewrite Hn_Sn.
-rewrite Hn_n.
-reflexivity.
-rewrite/x_n /r_n.
-rewrite Hn_Sn in Hn_V.
-rewrite Hn_n in Hn_V.
-assumption.
+    set F := Singleton D.
+    have ->: D = FamilyUnion F.
+    * apply: Extensionality_Ensembles; split; last by move => ? [? ?] [].
+      move => x1 H0.
+      by apply: (family_union_intro _ D).
+    apply: B_open_intro.
+    move=> x1 [].
+    exact: (indexed_union_intro _ xL).
+  + constructor.
+    by rewrite metric_zero.
+  + rewrite /= => x1 H0.
+    have nn_Vnn: forall n:nat, 
+        snd (Fn n) = n /\ Included (open_ball (point_set X) d (x_n n) (2*(r_n n))) (V n).
+    * elim=> [| n [Hn_n _]].
+      - rewrite H_0 x_n_0 r_n_0; split => //.
+        rewrite (_ : 2 * r0 = r0_t); last by rewrite /r0; field.
+        move => z InObz.
+        have: In (Intersection (V 0%nat) U) z by apply: Inc_ball_V0U.
+        by case.
+      - case: (H_n n) => Hn_Sn [_ [_ Hn_V]].
+        split; first by rewrite Hn_Sn Hn_n.
+        by rewrite Hn_Sn Hn_n in Hn_V.
 (************************************)
-apply Inhabited_intro with xL.
-split.
-apply indexed_intersection_intro.
-move=>n.
-simpl in H0.
-simpl in x1.
-
-set D_n:= open_ball (point_set X) d xL (r_n n).
-destruct (Lim D_n).
-set F_n:= Singleton D_n.
-have FD_n: D_n=FamilyUnion F_n.
-apply Extensionality_Ensembles; red; split.
-red. intros.
-apply (family_union_intro F_n D_n).
-apply In_singleton.
-assumption.  
-red.
-intros.
-destruct H1.
-have tmp: D_n = S by apply Singleton_inv. 
-rewrite tmp; clear tmp.
-assumption.
-rewrite FD_n.
-apply (B_open_intro (point_set X) ).
-red.
-intros. 
-have temp2: D_n=x2 by apply Singleton_inv.
-apply eq_sym in temp2.
-rewrite temp2.
-rewrite temp2 in H1.
-apply indexed_union_intro with xL.
-red.
-constructor.
-by apply r_n_pos.
-constructor.
-rewrite metric_zero.
-move: (r_n_pos n).
-by auto with *.
-assumption. 
-simpl in H1.
-simpl in x2.
-set n1:= max x2 n.
-have Dnn1: In D_n (x_n n1).
-apply H1.
-rewrite/n1.
-by apply Max.le_max_l.
-destruct Dnn1 as [d_xL_xn1].
-set k1:= (n1 - n)%nat.
-have le_0_k1: le 0%nat k1.
-rewrite/k1.
-have tmp0: (0 = n - n)%nat by auto with *. 
-rewrite tmp0; clear tmp0.
-apply minus_le_compat_r. 
-rewrite/n1. 
-by apply Max.le_max_r.
-have d_xn_xn1: d (x_n n) (x_n n1) <= r_n n. 
-have tmpk: n1 = (n + k1)%nat.
-rewrite/k1.
-apply le_plus_minus.
-rewrite/n1.
-by apply Max.le_max_r.
-rewrite tmpk.
-apply Rle_trans with (r_n n * (1-(/2)^k1)).
-by apply x_n_x_nk.
-have tmp3: 1-(/2)^k1 <= 1.
-apply Rle_move_pr2ml.
-have tmp4: 1 = 1 + 0 by auto with real.
-rewrite {1} tmp4; clear tmp4.
-apply Rplus_le_compat_l.
-have: 0<(/2)^k1 by auto with real.
-by auto with real.
-have tmp5: r_n n = (r_n n)*1 by auto with real.
-rewrite {2} tmp5; clear tmp5.
-move: tmp3.
-apply Rmult_le_compat_l.
-have tmp2: (n + (n1 - n) = (n1 - n)+ n)%nat by ring.
-(*rewrite tmp2; clear tmp2.*)
-move:(r0_pos).
-by auto with *.
-rewrite metric_sym in d_xn_xn1.
-have d_xn_xL: d xL (x_n n) < 2*r_n n.
-have triang : d xL (x_n n) <= d xL (x_n n1) + d (x_n n1) (x_n n) by apply triangle_inequality.
-have tmp6: d xL (x_n n1) + d (x_n n1) (x_n n) <= d xL (x_n n1) + r_n n.
-apply Rplus_le_compat_l.
-assumption.
-have tmp7: d xL (x_n n1) + r_n n < r_n n + r_n n.
-apply Rplus_lt_compat_r.
-assumption. 
-have tmp8: 2*r_n n = r_n n + r_n n by field. 
-rewrite tmp8; clear tmp8.
-apply Rle_lt_trans with (d xL (x_n n1) + d (x_n n1) (x_n n)).
-assumption.
-apply Rle_lt_trans with (d xL (x_n n1) + r_n n).
-assumption.
-assumption.
-rewrite metric_sym in d_xn_xL.
-destruct (nn_Vnn n) as [_ bVn].
-red in bVn.
-apply bVn.
-constructor.
-assumption.
-assumption.
-assumption.
+    apply: (Inhabited_intro _ _ xL).
+    split.
+    * apply indexed_intersection_intro => n.
+      set D_n:= open_ball (point_set X) d xL (r_n n).
+      case: (Lim D_n).
+      - set F_n := Singleton D_n.
+        have ->: D_n = FamilyUnion F_n.
+        + apply: Extensionality_Ensembles; split; last by move => ? [? ?] [].
+          move => x2 H1.
+          by apply: (family_union_intro _ D_n).
+        apply: B_open_intro.
+        move=> x2 [].
+        exact: (indexed_union_intro _ xL).
+      - constructor.
+        rewrite metric_zero => //.
+        exact: Rgt_lt.
+      - rewrite /= => x2 H1.
+        set n1 := max x2 n.
+        have [d_xL_xn1]: In D_n (x_n n1).
+        + apply: H1.
+          by apply Max.le_max_l.
+        set k1:= (n1 - n)%nat.
+        have le_0_k1: le 0%nat k1.
+        + rewrite (_: (0 = n - n)%nat); last by auto with *. 
+          apply: minus_le_compat_r.
+          by apply Max.le_max_r.
+          have d_xn_xn1: d (x_n n) (x_n n1) <= r_n n.
+          * rewrite (_: n1 = (n + k1)%nat);
+              last by apply: le_plus_minus; apply: Max.le_max_r.
+            apply: Rle_trans (x_n_x_nk _ _) _.
+            rewrite -[x in _ <= x]Rmult_1_r.
+            apply: Rmult_le_compat_l; first by apply: Rlt_le; apply: Rgt_lt.
+            apply: Rle_move_pr2ml.
+            rewrite -[x in x <= _]Rplus_0_r.
+            apply: Rplus_le_compat_l.
+            apply: Rlt_le.
+            by auto with real.
+          case: (nn_Vnn n) => _ bVn.
+          apply: bVn.
+          constructor.
+          apply: Rle_lt_trans (_ : _ <= d (x_n n) (x_n n1) + d (x_n n1) xL) _;
+            first by apply triangle_inequality.
+          rewrite [d (x_n n1) xL]metric_sym //.
+          apply: Rle_lt_trans (Rplus_le_compat_r _ _ _ d_xn_xn1) _.
+          apply: Rlt_le_trans (Rplus_lt_compat_l _ _ _ d_xL_xn1) _.
+          by fourier.
 (*****************************)
-simpl in H0.
-simpl in x1.
-set n2:= x1.
-destruct (H0 n2).
-rewrite/n2. 
-by auto.
-have H3: d (x_n n2) (x_n 0%nat) <= r_n 0%nat.
-apply Rle_trans with ((r_n 0%nat) * (1-(/2)^n2)).
-rewrite metric_sym.
-have tmp9: n2 = (0 + n2)%nat by auto with real. 
-rewrite tmp9; clear tmp9.
-by apply x_n_x_nk.
-assumption.
-have tmp10: r_n 0%nat = (r_n 0%nat)*1 by auto with *.
-rewrite {2} tmp10; clear tmp10.
-apply Rmult_le_compat_l. 
-move:(r0_pos).
-rewrite r_n_0.
-by auto with *.
-apply Rle_move_pr2ml.
-have tmp11 : 1=1+0 by auto with real.
-rewrite {1} tmp11; clear tmp11.
-apply Rplus_le_compat_l with (r:=1).
-have : 0 < (/2)^n2 by auto with real.
-by auto with real.
-rewrite r_n_0 in H3.
-rewrite x_n_0 in H3.
-have d_x0_xL: d x0 xL < r0_t.
-rewrite metric_sym.
-apply Rle_lt_trans with (d xL (x_n n2) + d (x_n n2) x0).
-apply triangle_inequality.
-assumption.
-apply Rlt_le_trans with (r0 + d (x_n n2) x0).
-apply Rplus_lt_compat_r.
-assumption.
-have tmp12: r0_t = r0 + r0.
-rewrite/r0.
-rewrite/Rdiv.
-rewrite -Rmult_plus_distr_r.
-field.
-rewrite tmp12; clear tmp12.
-apply Rplus_le_compat_l.
-assumption.
-assumption.
-red in Inc_ball_V0U.
-have Inball: In (open_ball (point_set X) d x0 r0_t) xL.
-constructor.
-by apply d_x0_xL.
-have InV0U: In (Intersection (V 0%nat) U) xL.
-apply Inc_ball_V0U.
-by apply Inball.
-destruct InV0U.
-assumption.
-(**********************)
-apply open_intersection2.
-destruct (H_od 0%nat).
-assumption.
-assumption.
+    * set n2 := x1.
+      case: (H0 n2); first by auto.
+      move=> H1.
+      case: (Inc_ball_V0U xL) => //.
+      constructor.
+      have H3: d (x_n n2) (x_n 0%nat) <= r_n 0%nat.
+      - rewrite metric_sym //.
+        move: (x_n_x_nk 0%nat n2).
+        rewrite /= => H2.
+        apply: Rle_trans H2 _.
+        rewrite -[x in _ <= x]Rmult_1_r.
+        apply: Rmult_le_compat_l; first by apply: Rlt_le; apply: Rgt_lt.
+        apply: Rle_move_pr2ml.
+        rewrite -[x in x <= _]Rplus_0_r.
+        apply: Rplus_le_compat_l.
+        apply: Rlt_le.
+        by auto with real.
+      rewrite r_n_0 in H3.
+      rewrite x_n_0 in H3.
+      rewrite metric_sym //.
+      apply: Rle_lt_trans (_: _ <= d xL (x_n n2) + d (x_n n2) x0) _;
+        first by apply: triangle_inequality.
+      apply: Rle_lt_trans (Rplus_le_compat_l _ _ _ H3) _.
+      apply: Rlt_le_trans (Rplus_lt_compat_r _ _ _ H1) _.      
+      rewrite /r0.
+      by fourier.
 Qed. (* BaireCategoryTheorem *)
 
 End BaireSpaces.
