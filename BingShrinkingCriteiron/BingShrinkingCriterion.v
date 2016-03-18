@@ -470,68 +470,41 @@ set g: point_set Yt -> point_set RTop :=
 set ft: point_set Xt -> point_set RTop := 
                                   fun x => g((f x)).
 have ft_conti: continuous ft.
-rewrite/ft.
-apply continuous_composition. 
-apply pointwise_continuity.
-move=> y.
-apply metric_space_fun_continuity with (dX:= d') (dY:=R_metric).
-apply MetricTopology_metrizable.
-apply RTop_metrization.
+- apply: continuous_composition => //.
+  apply: pointwise_continuity => y.
+  apply: (metric_space_fun_continuity Yt RTop _ _ d' R_metric).
+  apply: MetricTopology_metrizable.
+  by apply: RTop_metrization.
 move=> eps eps_pos.
-exists eps.
-split.
-assumption.
-move=> y' d'yy'_eps.
-rewrite/R_metric.
-rewrite/g.
-apply Rabs_def1. 
-have tri1: d' Y0 y' <= d' y y' + d' Y0 y.
-have tmp: d' y y' + d' Y0 y = d' Y0 y + d' y y' by apply Rplus_comm.
-rewrite tmp; clear tmp.
-by apply triangle_inequality.
-have tri2: d' Y0 y'- d' Y0 y <= d' y y'.
-fourier.
-by apply Rle_lt_trans with (d' y y').
-have tri2: d' Y0 y <= d' y y'+ d' Y0 y'.
-have tmp: d' y y' + d' Y0 y' = d' Y0 y' + d' y y' by apply Rplus_comm.
-rewrite tmp; clear tmp.
-have tmp: d' y y' = d' y' y  by apply metric_sym.
-rewrite tmp;clear tmp.
-apply triangle_inequality.
-assumption.
-apply Rlt_le_trans with (- d' y y').
-fourier.
-fourier.
-assumption.
-apply R_compact_subset_bounded.
-have Imft: Im Full_set (fun x : X => d' (y0 x) (f x))
-  = Im Full_set ft.
-apply Extensionality_Ensembles; split; red; intros.
-destruct H.
-rewrite y0Y0 in H0.
-apply Im_intro with x.
-assumption.
-rewrite/ft.
-by rewrite/g.
-destruct H.
-rewrite/ft in H0.
-rewrite/g in H0.
-rewrite<-y0Y0 with x in H0.
-apply Im_intro with x.
-assumption.
-assumption.
-rewrite Imft.
+exists eps; split => //.
+- move=> y' d'yy'_eps.
+  rewrite /R_metric /g.
+  apply: Rabs_def1. 
+  + apply: Rlt_move_pr2ml.
+    apply: Rle_lt_trans (_ : _ <= d' Y0 y + d' y y') _;
+      first by apply: triangle_inequality.
+    rewrite Rplus_comm.
+    exact: Rplus_lt_compat_r.
+  + apply: Rlt_move_pl2mr.
+    rewrite Rplus_comm.
+    apply: Rlt_move_mr2pl.
+    apply: Rle_lt_trans (_ : _ <= d' Y0 y' + d' y' y) _;
+      first by apply: triangle_inequality.
+    apply: Rplus_lt_compat_l.
+    by rewrite metric_sym // Ropp_involutive.
+- apply: R_compact_subset_bounded.
+  have ->: Im Full_set (fun x : X => d' (y0 x) (f x)) = Im Full_set ft
+    by apply: Extensionality_Ensembles; split;
+       move=> _ [x _ _ ->]; exists x => //; rewrite y0Y0.
 (* Require Import ContinuousFactorization. *)
 (*have ft_img:
   forall x:point_set Xt, In (Im Full_set ft) (ft x).
 move=>x.
 by apply Im_intro with x.*)
-set ftr := continuous_surj_factorization ft.
-apply compact_image with ftr.
-assumption.
-apply continuous_surj_factorization_is_continuous.
-assumption.
-by apply continuous_surj_factorization_is_surjective.
+  set ftr := continuous_surj_factorization ft.
+  apply: (compact_image ftr) => //.
+  + exact: continuous_surj_factorization_is_continuous.
+  + exact: continuous_surj_factorization_is_surjective.
 Qed. (* continuous_bounded *)
 
 Let W (f: CMap) (eps:R):
