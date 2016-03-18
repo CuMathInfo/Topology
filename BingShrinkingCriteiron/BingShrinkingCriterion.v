@@ -1,8 +1,12 @@
 (** BingShrinkingCriterion.v by Ken'ichi Kuga **************)
+(** Simplified using SSReflect by Mitsuharu Yamamoto  ******)
+
+(***********************************************************)          
 (*   Bing Shrinking Criterion                              *)
 (*          and                                            *)
 (*     Bing Shrinking Theorem for compact spaces           *)
 (* *********************************************************)
+
 (* 
 
 Definition approximable_by_homeos (f:X->Y): Prop:=
