@@ -149,12 +149,11 @@ Qed.
 
 Lemma MetricTopology_Hausdorff: Hausdorff (MetricTopology dt dt_metric). 
 Proof.
-apply T3_sep_impl_Hausdorff.
-apply normal_sep_impl_T3_sep.
-apply metrizable_impl_normal_sep.
-apply intro_metrizable with dt.
-apply dt_metric.
-by apply MetricTopology_metrizable.
+apply: T3_sep_impl_Hausdorff.
+apply: normal_sep_impl_T3_sep.
+apply: metrizable_impl_normal_sep.
+apply: (intro_metrizable Tt dt) => //.
+exact: MetricTopology_metrizable.
 Qed.
 
 Lemma lim_range: 
@@ -165,41 +164,21 @@ Lemma lim_range:
          -> dt (xn n0) x <= r.
 Proof.
 move=> x xn r n0 dtxn0n lim_x.
-apply NNPP.
-move=> H.
-apply Rnot_le_gt in H.
+apply: Rnot_gt_le => H.
 set eps:= dt (xn n0) x - r.
-have eps_pos: eps > 0.
-rewrite/eps.
-fourier.
-destruct lim_x with (open_ball T dt x eps).
-apply open_ball_open.
-assumption.
-constructor.
-rewrite metric_zero.
-red in eps_pos.
-assumption.
-assumption.
-simpl in H0.
-simpl in x0.
-set m0 := max x0 n0.
-apply Rgt_lt in H.
-have H1:
-  dt (xn n0) x < r + eps.
-apply Rle_lt_trans with
-       (dt (xn n0) (xn m0) + dt (xn m0) x).
-apply triangle_inequality.
-assumption.
-apply Rplus_le_lt_compat.
-apply dtxn0n.
-rewrite/m0.
-apply Max.le_max_r.
-destruct H0 with m0.
-rewrite/m0.
-apply Max.le_max_l.
-by rewrite metric_sym.
-rewrite/eps in H1.
-fourier.
+have eps_pos: eps > 0 by apply: Rgt_minus.
+case: (lim_x (open_ball T dt x eps)).
+- exact: open_ball_open.
+- constructor; by rewrite metric_zero.
+- rewrite /= => x0 H0.
+  suff: dt (xn n0) x < r + eps
+    by apply: Rge_not_lt; rewrite /eps; fourier.
+  set m0 := max x0 n0.  
+  apply: Rle_lt_trans (_ : _ <= (dt (xn n0) (xn m0) + dt (xn m0) x)) _;
+    first by apply: triangle_inequality.
+  apply: Rplus_le_lt_compat (dtxn0n _ _) _; first by apply: Max.le_max_r.
+  case: (H0 m0); first by apply: Max.le_max_l.
+  by rewrite metric_sym.
 Qed.
 
 End Logical_Topological_Lemmas.
