@@ -225,378 +225,230 @@ auto with real.
 destruct X_inhabited as [x0].
 exists (d' (f0 x0) (g0 x0)); exists x0. constructor.
 reflexivity.
+(* Ssreflect-style proof.  But this makes the term bigger.
+- case: Hf => [[mf Hf] _]; case: Hg => [[mg Hg] _].
+  exists (mf + mg) => _ [x _ _ ->].
+  apply: Rle_trans (_ : _ <= d' (f0 x) (y0 x)  + d' (y0 x) (g0 x)) _;
+    first by apply: triangle_inequality.
+  rewrite (metric_sym _ _ d'_metric).
+  apply: Rplus_le_compat.
+  + by apply: Hf; exists x.
+  + by apply: Hg; exists x.
+- case: X_inhabited => [x0].
+  by exists (d' (f0 x0) (g0 x0)); exists x0.
+*)
 Defined.
 
 Lemma um_metric: metric um.
 Proof.
 constructor.
-move=> f g.
-rewrite/um.
-destruct f as [f0 Hf]; destruct g as [g0 Hg].
-destruct sup. simpl.
-destruct X_inhabited as [x0].
-apply Rge_trans with (d' (f0 x0) (g0 x0)).
-apply Rle_ge.
-apply i.
-by apply Im_intro with x0; constructor.
-by apply d'_metric.
-
-move=> f g.
-rewrite/um.
-destruct f as [f0 Hf]; destruct g as [g0 Hg].
-destruct sup.
-destruct sup.
-simpl.
-have j: Im Full_set (fun x:X => d'(f0 x) (g0 x))
-      = Im Full_set (fun x:X => d'(g0 x) (f0 x)).
-apply Extensionality_Ensembles;split;red;intros.
-destruct H.
-exists x1.
-constructor.
-by rewrite metric_sym.
-destruct H.
-exists x1.
-constructor.
-by rewrite metric_sym.
-rewrite j in i.
-apply Rle_antisym.
-apply i; apply i0.
-by apply i0; apply i.
-move=> f g h.
-destruct f as [f0 [Hf]].
-destruct g as [g0 [Hg]].
-destruct h as [h0 [Hh]].
-simpl.
-repeat destruct sup; simpl.
-apply i.
-red.
-intros.
-destruct H.
-rewrite H0.
-apply Rle_trans with 
-  (d' (f0 x2) (g0 x2) + d' (g0 x2) (h0 x2)).
-apply d'_metric.
-have ifg: d' (f0 x2) (g0 x2) <= x0.
-destruct i0 as [iH0]; apply iH0. by exists x2.
-have igh: d' (g0 x2) (h0 x2) <= x1. 
-destruct i1 as [iH1]; apply iH1. by exists x2.
-by auto with real.
-
-move=>f.
-rewrite/um.
-destruct f as [f0 [Bf Cf]].
-destruct sup.
-simpl.
-destruct i.
-apply Rle_antisym.
-apply H0.
-red; intros.
-destruct H1.
-rewrite H2.
-rewrite (metric_zero _ d' d'_metric).
-by auto with real.
-apply H.
-destruct X_inhabited as [x0].
-exists x0.
-by auto.
-by rewrite (metric_zero Y d' d'_metric (f0 x0)).
-
-move=> f g.
-destruct f as [f0 [Bf Cf]].
-destruct g as [g0 [Bg Cg]].
-move=> Eum. 
+- move=> [f0 Hf] [g0 Hg] /=.
+  case: X_inhabited => [x0] /=.
+  case: sup => /= x [Hxub Hxleast].
+  apply: Rge_trans (_ : _ >= d' (f0 x0) (g0 x0)) _; last by case: d'_metric.
+  apply: Rle_ge.
+  apply: Hxub.
+  by exists x0.
+- move=> [f0 Hf] [g0 Hg] /=.
+  case: sup => /= x [Hxub Hxleast].
+  case: sup => /= y [Hyub Hyleast].
+  have j: Im Full_set (fun x:X => d'(f0 x) (g0 x))
+          = Im Full_set (fun x:X => d'(g0 x) (f0 x))
+    by apply Extensionality_Ensembles; split => /=;
+       move => _ [x1 _ _ ->]; exists x1 => //; rewrite metric_sym.
+  apply: Rle_antisym.
+  + by apply: Hxleast; rewrite j; apply: Hyub.
+  + by apply: Hyleast; rewrite -j; apply: Hxub.
+- move=> [f0 Hf] [g0 Hg] [h0 Hh] /=.
+  case: sup => /= x [Hxub Hxleast].
+  case: sup => /= y [Hyub Hyleast].
+  case: sup => /= z [Hzub Hzleast].
+  apply: Hxleast => _ [x2 _ _ ->].
+  apply: Rle_trans (_ : _ <= d' (f0 x2) (g0 x2) + d' (g0 x2) (h0 x2)) _;
+    first by case: d'_metric.
+  apply: Rplus_le_compat.
+  + by apply: Hyub; exists x2.
+  + by apply: Hzub; exists x2.
+- move=> [f0 [Bf Cf]] /=.
+  case: sup => /= x [Hxub Hxleast].
+  apply: Rle_antisym.
+  + apply: Hxleast => _ [x0 _ _ ->].
+    rewrite metric_zero //.
+    by auto with real.
+  + apply: Hxub.
+    case: X_inhabited => [x0].
+    exists x0 => //.
+    by rewrite metric_zero.
+- move=> [f0 [Bf Cf]] [g0 [Bg Cg]] /=.
+  case: sup => /= x0 [Hx0ub Hx0least] Hx0.
 (* Require Import Proj1SigInjective.*)
-apply subset_eq_compatT.
+  apply: subset_eq_compatT.
 (* Require Import FunctionalExtensionality.*)
-extensionality x.
-apply (metric_strict _ d' d'_metric). 
-simpl in Eum.
-destruct sup in Eum.
-simpl in Eum.
-rewrite Eum in i; clear Eum.
-apply Rle_antisym.
-apply i.
-by exists x.
-apply Rge_le.
-by apply (metric_nonneg _ d' d'_metric).
-Qed.
+  extensionality x.
+  apply: (metric_strict _ _ d'_metric).
+  rewrite Hx0 in Hx0ub.
+  rewrite Hx0 in Hx0least.
+  apply: Rle_antisym.
+  + apply: Hx0ub.
+    by exists x.
+  + apply: Rge_le.
+    by case: d'_metric.
+Qed.    
 
 
 Lemma Rle_d'_um: forall (f g:CMap) (x:X),
   d' (proj1_sig f x) (proj1_sig g x) <=  um f g. 
 Proof.
-move=> f g x.
-destruct f as [f0 [Bf Cf]].
-destruct g as [g0 [Bg Cg]].
-simpl.
-destruct sup.
-simpl.
-destruct i as [x0ub _].
-apply x0ub.
-by apply Im_intro with x.
+move=> [f0 [Bf Cf]] [g0 [Bg Cg]] /= x.
+case sup => /= x0 [Hx0ub Hx0least].
+apply: Hx0ub.
+by exists x.
 Qed.
 
 Lemma Rle_um_all_d': forall (f g:CMap) (r:R), r > 0 ->
 (forall x:X, d' (proj1_sig f x) (proj1_sig g x) <=r) ->
   um f g <= r.
 Proof.
-move=> f g r r_pos Hd'r.
-destruct f as [f0 [Bf Cf]].
-destruct g as [g0 [Bg Cg]].
-simpl.
-destruct sup.
-simpl.
-simpl in Hd'r.
-destruct i as [_ lub_x].
-apply lub_x.
-red.
-move=>r1 Imr1.
-destruct Imr1.
-rewrite H0.
-by apply Hd'r.
+move=> [f0 [Bf Cf]] [g0 [Bg Cg]] /= r r_pos Hd'r.
+case sup => /= x0 [Hx0ub Hx0least].
+apply: Hx0least.
+move=> _ [x _ _ ->].
+exact: Hd'r.
 Qed.
 
 Let CMapt := MetricTopology um um_metric.
 
 Lemma um_complete: complete d' d'_metric -> complete um um_metric.
 Proof.
-red. 
 move=> cpl_d' fn cauchy_fn.
 pose yn (x:X): Net nat_DS Yt:= fun n:nat => (proj1_sig (fn n%nat)) x.
 have cauchy_yn: forall x:X, cauchy d' (yn x).
-move=>x eps pos_eps.
-destruct cauchy_fn with eps as [N cau_fn].
-apply: pos_eps.
-exists N.
-move=>m n hm hn.
-have d'xu: d' (yn x m) (yn x n) <= um (fn m) (fn n) by apply Rle_d'_um.
-apply Rle_lt_trans with (um (fn m) (fn n)).
-apply d'xu.
-apply cau_fn.
-apply hm.
-by apply hn.
+- move=> x eps pos_eps.
+  case: (cauchy_fn _ pos_eps) => [N cau_fn].
+  exists N.
+  move=> m n hm hn.
+  apply: Rle_lt_trans (Rle_d'_um _ _ _) _.
+  by apply: cau_fn.
 pose choice_R (x:X) (y:Y): Prop := net_limit (yn x) y. 
-have choice_f0: forall x:X, exists y:Y, (choice_R x y).
-move=>x.
-rewrite/choice_R.
-apply cpl_d'.
-by apply cauchy_yn.
-have choice_th: exists f0: X->Y, 
-  (forall x:X, choice_R x (f0 x)) by apply choice. 
-destruct choice_th as [f0 Hf0].
+have choice_f0: forall x:X, exists y:Y, (choice_R x y)
+  by move=> x; apply cpl_d'; apply cauchy_yn.
+have [f0 Hf0]: exists f0: X->Y, 
+  (forall x:X, choice_R x (f0 x)) by apply: choice. 
 have Bf0: bound (Im Full_set (fun x:X=> d' (y0 x) (f0 x))).
-red.
-destruct cauchy_fn with 1 as [n0 Bd1].
-apply Rlt_gt.
-by apply Rlt_0_1.
-pose Bfn0:=proj2_sig (fn n0).
-destruct Bfn0 as [Bfn0 _].
-destruct Bfn0 as [ub Bfn0].
-red in Bfn0.
-exists (ub+1).
-red.
-move=> r H. 
-destruct H.
-rewrite -> H0.
-apply Rle_trans with  (d' (y0 x) (proj1_sig (fn n0) x) 
-                    + d' (proj1_sig (fn n0) x) (f0 x)).
-by apply triangle_inequality.
-apply Rplus_le_compat.
-destruct Bfn0 with (d' (y0 x) (proj1_sig (fn n0) x)).
-by apply Im_intro with x.
-by apply Rlt_le.
-by apply Req_le.
-have d'um1: forall n:nat, (n >= n0)%nat ->
-  d' (proj1_sig (fn n0) x) (proj1_sig (fn n) x) < 1.
-move=> n hn.
-apply Rle_lt_trans with (um (fn n0) (fn n)).
-apply Rle_d'_um. 
-by apply Bd1.
-apply Rnot_lt_le.
-move=> Fh. 
-set ep:= d' (proj1_sig (fn n0) x) (f0 x) - 1.
-have hpos_ep: ep > 0.
-apply Rlt_gt in Fh.
-rewrite/ep.
-by apply Rgt_minus.
-destruct Hf0 with (x:=x) (U:= open_ball Y d' (f0 x) ep).
-by apply open_ball_open with (x:=f0 x) (r:=ep).
-constructor.
-by rewrite metric_zero.
-simpl in H1.
-simpl in x0.
-set m0:=max n0 x0.
-destruct H1 with m0.
-rewrite/m0.
-by apply Max.le_max_r.
-have tri: d' (proj1_sig (fn n0) x) (f0 x) <= 
-   d' (proj1_sig (fn n0) x) (yn x m0) + d' (yn x m0) (f0 x) by apply triangle_inequality.
-have H3: d' (proj1_sig (fn n0) x) (yn x m0) < 1.
-apply d'um1.
-rewrite/m0.
-red.
-by apply Max.le_max_l.
-rewrite metric_sym in H2.
-have H4: d' (proj1_sig (fn n0) x) (yn x m0) + d' (yn x m0) (f0 x) < 1 + ep 
-                                                            by apply Rplus_lt_compat. 
-rewrite/ep in H4.
-have H5: 1+ (d' (proj1_sig (fn n0) x) (f0 x)-1) = d' (proj1_sig (fn n0) x) (f0 x) 
-  by auto with real.
-rewrite H5 in H4.
-clear H5.
-have H6: d' (proj1_sig (fn n0) x) (f0 x) < d' (proj1_sig (fn n0) x) (f0 x)
- by apply Rle_lt_trans with (d' (proj1_sig (fn n0) x) (yn x m0) + d' (yn x m0) (f0 x)).
-by apply Rlt_irrefl in H6.
-assumption.
+- case: (cauchy_fn 1); first by apply: Rlt_0_1.
+  move=> n0 Bd1.
+  case: (proj2_sig (fn n0)) => [[ub Bfn0] _].
+  exists (ub+1) => _ [x _ _ ->].
+  apply: Rle_trans (_ : _ <= (d' (y0 x) (proj1_sig (fn n0) x)
+                              + d' (proj1_sig (fn n0) x) (f0 x))) _;
+    first by apply triangle_inequality.
+  apply: Rplus_le_compat.
+  + apply: (Bfn0 (d' (y0 x) (proj1_sig (fn n0) x))).
+    by exists x.
+  + have d'um1: forall n:nat, (n >= n0)%nat ->
+      d' (proj1_sig (fn n0) x) (proj1_sig (fn n) x) < 1.
+    * move=> n hn.
+      apply: Rle_lt_trans (Rle_d'_um _ _ _) _.
+      by apply: Bd1.
+    apply Rnot_lt_le => Fh.
+    set ep := d' (proj1_sig (fn n0) x) (f0 x) - 1.
+    have hpos_ep: ep > 0 by apply: Rgt_minus.
+    case: (Hf0 x (open_ball Y d' (f0 x) ep)).
+    * exact: open_ball_open.
+    * constructor.
+      by rewrite metric_zero.
+    * rewrite /= => x0 H1.
+      set m0 := max n0 x0.
+      case: (H1 m0); first by apply Max.le_max_r.
+      have H3: d' (proj1_sig (fn n0) x) (yn x m0) < 1
+        by apply: d'um1; apply: Max.le_max_l.
+      apply: Rle_not_gt.
+      rewrite metric_sym //.
+      apply: Rle_move_pr2ml.
+      apply: Rle_trans (_ : _ <= d' (proj1_sig (fn n0) x) (yn x m0)
+                                 + d' (yn x m0) (f0 x)) _;
+        first by apply: triangle_inequality.
+      apply: Rlt_le.
+      apply: Rlt_le_trans (Rplus_lt_compat_r _ _ _ H3) _.
+      auto with real.
 have Cf0: @continuous Xt Yt f0.
-apply pointwise_continuity.
-move=>x.
-simpl in x.
-apply metric_space_fun_continuity with (dX:=d) (dY:=d').
-apply MetricTopology_metrizable.
-apply MetricTopology_metrizable.
-move=> eps eps_pos.
-simpl.
-destruct cauchy_fn with (/4 * eps) as [N H].
-by fourier.
-have f0fN: forall x:X, 
-  d' (f0 x) (proj1_sig (fn N) x) <= /4 * eps.
-apply not_ex_not_all.
-move=> FH.
-destruct FH. 
-apply Rnot_le_gt in H0.
-set de:= d' (f0 x0) (proj1_sig (fn N) x0) - /4 * eps.
-have de_pos: de > 0.
-rewrite/de.
-by fourier.
-destruct Hf0 with x0 (open_ball Y d' (f0 x0) de).
-apply open_ball_open with(x:=f0 x0) (r:=de).
-assumption.
-trivial.
-constructor. 
-by rewrite metric_zero.
-simpl in H1.
-simpl in x1.
-set N1:= max N x1.
-have f0ynx1 : d' (f0 x0) (yn x0 N1) < de.
-apply H1.
-rewrite/N1.
-by apply Max.le_max_r.
-have ynNynN1 : d' (yn x0 N1) (yn x0 N) < /4 * eps.
-apply Rle_lt_trans with (um (fn N1) (fn N)).
-apply Rle_d'_um.
-apply H.
-rewrite/N1.
-red.
-by apply Max.le_max_l.
-auto.
-have H2: d' (f0 x0) (yn x0 N) < de + /4 * eps.
-apply Rle_lt_trans with 
- (d' (f0 x0) (yn x0 N1) + d' (yn x0 N1) (yn x0 N)).
-apply triangle_inequality.
-assumption.
-by apply Rplus_lt_compat.
-rewrite/de in H2.
-rewrite/yn in H2.
-have tmp: 
-d' (f0 x0) (proj1_sig (fn N) x0) - /4 * eps + /4 * eps =
-d' (f0 x0) (proj1_sig (fn N) x0) by fourier.
-rewrite tmp in H2; clear tmp.
-move:H2.
-by apply Rlt_irrefl.
-pose (proj2_sig (fn N)).
-simpl in a.
-destruct a as [_ HC].
-apply (continuous_func_continuous_everywhere 
-   Xt Yt (proj1_sig (fn N))) with x in HC.
-apply (metric_space_fun_continuity_converse
-  Xt Yt (proj1_sig (fn N)) x d d') with (/2 * eps) in HC.
-destruct HC as [delta HC].
-destruct HC as [delta_pos HC].
-exists delta.
-split.
-assumption.
-move=> x' dxx'_le_delta.
-have dddd: d' (f0 x) (f0 x') <= 
-d' (f0 x) (proj1_sig (fn N) x) 
-+ d' (proj1_sig (fn N) x) (proj1_sig (fn N) x')
-+ d' (proj1_sig (fn N) x') (f0 x').  
-apply Rle_trans with 
- (d' (f0 x) (proj1_sig (fn N) x') 
-+ d'(proj1_sig (fn N) x') (f0 x')).
-apply triangle_inequality.
-assumption.
-apply Rplus_le_compat_r.
-apply Rle_trans with
- (d' (f0 x) (proj1_sig (fn N) x)
-+ d' (proj1_sig (fn N) x) (proj1_sig (fn N) x')).
-apply triangle_inequality.
-assumption.
-apply Rplus_le_compat_r.
-by apply Req_le.
-apply Rle_lt_trans with
- (d' (f0 x) (proj1_sig (fn N) x) 
-+ d' (proj1_sig (fn N) x) (proj1_sig (fn N) x')
-+ d' (proj1_sig (fn N) x') (f0 x')).
-apply dddd. clear dddd.
-apply Rle_lt_trans with
- (d' (f0 x) (proj1_sig (fn N) x) 
-+ d' (proj1_sig (fn N) x) (proj1_sig (fn N) x')
-+ /4 * eps).
-apply Rplus_le_compat_l.
-rewrite metric_sym.
-apply f0fN.
-assumption.
-have eps3 : eps = /4*eps + /2*eps + /4*eps by field.
-rewrite {2} eps3.
-clear eps3.
-apply Rplus_lt_compat_r.
-apply Rplus_le_lt_compat.
-apply f0fN.
-by apply HC.
-apply MetricTopology_metrizable.
-apply MetricTopology_metrizable.
-fourier.
-exists 
- (exist (fun g:X->Y => bound (Im Full_set
+- apply: pointwise_continuity => /= x.
+  apply: (metric_space_fun_continuity Xt Yt _ _ d d').
+  + exact: MetricTopology_metrizable.
+  + exact: MetricTopology_metrizable.
+  + move=> eps eps_pos /=.
+    case: (cauchy_fn (/4 * eps)); first by fourier.
+    move=> N H.
+    have f0fN: forall x:X, 
+      d' (f0 x) (proj1_sig (fn N) x) <= /4 * eps.
+    * move=> x0.
+      apply: Rnot_gt_le => H0.
+      set de := d' (f0 x0) (proj1_sig (fn N) x0) - /4 * eps.
+      have de_pos: de > 0 by apply: Rgt_minus.
+      case (Hf0 x0 (open_ball Y d' (f0 x0) de)).
+      - exact: open_ball_open.
+      - constructor.
+        by rewrite metric_zero.
+      - rewrite /= => x1 H1.
+        set N1 := max N x1.
+        have f0ynx1 : d' (f0 x0) (yn x0 N1) < de
+          by case: (H1 N1) => //; by apply Max.le_max_r.
+        have ynNynN1 : d' (yn x0 N1) (yn x0 N) < /4 * eps
+          by apply: Rle_lt_trans (Rle_d'_um _ _ _) _; apply: H => //;
+             apply: Max.le_max_l.
+        have: d' (f0 x0) (yn x0 N) < de + /4 * eps.
+        + apply: Rle_lt_trans (_ : _ <= (d' (f0 x0) (yn x0 N1)
+                                         + d' (yn x0 N1) (yn x0 N))) _;
+            first by apply: triangle_inequality.
+            by apply Rplus_lt_compat.
+        apply: Rge_not_lt.
+        rewrite /de /yn.
+        by fourier.
+    case: (proj2_sig (fn N)) => _.
+    move/continuous_func_continuous_everywhere/(_ x).
+    move/(metric_space_fun_continuity_converse Xt Yt _ _ d d').
+    move/(_ (MetricTopology_metrizable _ _ _)).
+    move/(_ (MetricTopology_metrizable _ _ _)).
+    case/(_ (/2 * eps)); first by fourier.
+    move=> delta [delta_pos HC].
+    exists delta; split => // x' dxx'_le_delta.
+    apply: Rle_lt_trans (_ : _ <= (d' (f0 x) (proj1_sig (fn N) x') 
+                                   + d'(proj1_sig (fn N) x') (f0 x'))) _;
+      first by apply: triangle_inequality.
+    apply: Rle_lt_trans
+             (Rplus_le_compat_r _ _ _
+                (_ : _ <= (d' (f0 x) (proj1_sig (fn N) x) 
+                           + d' (proj1_sig (fn N) x) (proj1_sig (fn N) x')))) _;
+      first by apply: triangle_inequality.
+    rewrite [d' _ (f0 x')]metric_sym //.
+    apply: Rle_lt_trans (Rplus_le_compat_l _ _ _ (f0fN _)) _.
+    rewrite [x in _ < x](_ : eps = /4*eps + /2*eps + /4*eps); last by field.
+    apply: Rplus_lt_compat_r.
+    apply: Rplus_le_lt_compat => //.
+    by apply: HC.
+exists (exist (fun g:X->Y => bound (Im Full_set
               (fun x:X=> d' (y0 x) (g x))) /\
               @continuous Xt Yt g) f0 (conj Bf0 Cf0)).
-apply metric_space_net_limit with um.
-apply MetricTopology_metrizable.
+apply: (metric_space_net_limit CMapt um).
+apply: MetricTopology_metrizable.
 move=> eps eps_pos.
-destruct cauchy_fn with (/2*eps) as [i0 H].
-fourier.
-exists i0.
-move=> j i0j.
-simpl in j.
-simpl in i0j.
-apply Rle_lt_trans with (/2*eps).
-apply Rle_um_all_d'.
-fourier. 
-move=>x.
-simpl.
-
-have tmp: proj1_sig (fn j) x = (yn x) j by rewrite/yn.
-rewrite tmp; clear tmp.
-rewrite metric_sym.
-
-apply (lim_range
-           Y d' d'_metric (f0 x) (yn x) (/2*eps) j).
-move=>n le_j_n.
-rewrite/yn.
-apply Rle_trans with (um (fn j) (fn n)).
-apply Rle_d'_um.
-apply Rlt_le.
-apply H.
-red.
-assumption.
-red.
-apply le_trans with j.
-assumption.
-assumption.
-apply Hf0.
-assumption.
-fourier.
+case: (cauchy_fn (/2*eps)); first by fourier.
+move=> i0 H.
+exists i0 => j i0j.
+apply: Rle_lt_trans (_ : _ <= (/2*eps)) _.
+- apply: Rle_um_all_d'; first by fourier.
+  move=> x /=.
+  rewrite -[proj1_sig (fn j) x]/((yn x) j).
+  rewrite metric_sym //.
+  rewrite /= in i0j.
+  apply: (lim_range Y d' d'_metric (f0 x) (yn x) (/2*eps) j) => n le_j_n.
+  + apply: Rle_trans (Rle_d'_um _ _ _) _.
+    apply: Rlt_le.
+    apply: H.
+    by auto.
+  + exact: le_trans le_j_n.
+- exact: Hf0.
+- by fourier.
 Qed.
 
 Hypothesis X_compact: compact Xt.
