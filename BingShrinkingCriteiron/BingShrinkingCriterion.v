@@ -120,24 +120,16 @@ Lemma id_map_continuous :
   forall XT:TopologicalSpace, continuous (id_map XT).
 Proof.
 move=> XT V V_open.
-have inv_id: inverse_image (id_map XT) V = V. 
-apply Extensionality_Ensembles; split; red; intros.
-destruct H.
-by rewrite/id_map in H.
-constructor.
-by rewrite/id.
-by rewrite inv_id.
+suff ->: inverse_image (id_map XT) V = V by [].
+apply: Extensionality_Ensembles; split => x //.
+by case.
 Qed.
 
 Lemma id_map_homeomorphism : 
   forall XT:TopologicalSpace, homeomorphism (id_map XT).
 Proof.
 move=>XT.
-apply intro_homeomorphism with (id_map XT).
-apply id_map_continuous.
-apply id_map_continuous.
-by rewrite/id_map.
-by rewrite/id_map.
+by apply: (intro_homeomorphism _ (id_map XT)) => //; apply: id_map_continuous.
 Qed.
 
 Variable T:Type.
