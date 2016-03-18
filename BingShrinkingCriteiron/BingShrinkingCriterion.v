@@ -1023,33 +1023,19 @@ forall (Xt Yt:TopologicalSpace)
 (f: (point_set Xt) -> (point_set Yt)) (U: Ensemble (point_set Xt)),
  bijective f ->
  Complement (Im U f) = Im (Complement U) f.
-move=> XT YT f U bij_f.
-destruct bij_f as [inj_f surj_f].
-apply Extensionality_Ensembles; split; red; move=> y H_y.
-destruct surj_f with y.
-red.
-apply Im_intro with x.
-red.
-move=> In_U_x.
-have InIm_y: In (Im U f) y.
-red.
-apply Im_intro with x.
-assumption.
-by apply eq_sym.
-by destruct H_y.
-by apply eq_sym.
-red.
-move=> ImUf_y.
-red in H_y.
-destruct H_y.
-destruct ImUf_y.
-
-have xeqx0: x = x0.
-apply inj_f.
-by rewrite <- H0.
-
-rewrite xeqx0 in H.
-by destruct H.
+Proof.
+move=> XT YT f U [inj_f surj_f].
+apply Extensionality_Ensembles; split => y H_y.
+- case: (surj_f y) => x H.
+  exists x => // In_U_x.
+  apply: H_y.
+  by exists x.
+- case Ey0: _ / H_y => [x Hx y1 Hy1].
+  case Ey1: _ / => [x0 Hx0 y2 Hy2].
+  apply: Hx.
+  move: Ey1.
+  rewrite Hy1 Hy2.
+  by move/inj_f => ->.
 Qed.
 
 Lemma bij_conti_is_homeo_for_compact_Hausdorff_spaces:
