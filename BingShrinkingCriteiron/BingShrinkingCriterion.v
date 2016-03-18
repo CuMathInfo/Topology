@@ -139,30 +139,12 @@ Hypothesis dt_metric: metric dt.
 Let Tt := MetricTopology dt dt_metric.
 
 Lemma open_ball_open:
-  forall (x: T) (r: R) (D: Ensemble (point_set Tt)), 
-    r > 0 -> D = open_ball T dt x r -> open D. 
+  forall (x: T) (r: R),
+    r > 0 -> open (open_ball T dt x r : Ensemble (point_set Tt)).
 Proof.
-move=> x r D H_r_pos DisOB.
-simpl.
-set F:= Singleton D.
-have DisUF : D = FamilyUnion F.
-apply Extensionality_Ensembles;split;red;intros.
-apply family_union_intro with D.
-by apply In_singleton.
-assumption.
-destruct H.
-have DisS: D = S by apply Singleton_inv.
-by rewrite DisS.
-have H: Included F (IndexedUnion (metric_topology_neighborhood_basis dt)).
-move=> D' InFD'.
-apply indexed_union_intro with x.
-have DisD': D=D' by apply Singleton_inv.
-rewrite <- DisD'.
-rewrite DisOB.
-apply intro_open_ball.
-assumption.
-rewrite DisUF.
-by apply B_open_intro.
+move=> x r H_r_pos.
+apply: open_ball_is_open => //.
+by apply MetricTopology_metrizable.
 Qed.
 
 Lemma MetricTopology_Hausdorff: Hausdorff (MetricTopology dt dt_metric). 
@@ -191,9 +173,8 @@ have eps_pos: eps > 0.
 rewrite/eps.
 fourier.
 destruct lim_x with (open_ball T dt x eps).
-apply open_ball_open with (x:=x) (r:=eps).
+apply open_ball_open.
 assumption.
-reflexivity.
 constructor.
 rewrite metric_zero.
 red in eps_pos.
@@ -787,12 +768,11 @@ have Exgn: Inhabited
          (open_ball CMap um fr (/ INR (S n)))).
 apply closure_impl_meets_every_open_neighborhood with fr.
 by apply fr_in_clcoW.
-apply open_ball_open with (x:=fr) (r:= / INR (S n)).
+apply open_ball_open.
 red.
 apply Rinv_0_lt_compat.
 apply lt_0_INR.
 by apply lt_0_Sn.
-reflexivity.
 constructor.
 rewrite metric_zero.
 apply Rinv_0_lt_compat.
@@ -892,10 +872,9 @@ have a_cond_choice: exists Na : nat -> nat, forall n, a_cond n (Na n).
 apply choice.
 move=>n.
 destruct H_lim_a with (U:= (open_ball X d lim_a (/INR (S n)))) (i:= n).
-apply open_ball_open with (x:= lim_a) (r:= /INR (S n)).
+apply open_ball_open.
 red.
 by apply pos_inv_INR_Sn.
-reflexivity.
 constructor.
 rewrite metric_zero.
 by apply pos_inv_INR_Sn.
@@ -925,10 +904,9 @@ have ab_cond_choice: exists Nab : nat -> nat,
 apply choice.
 move=>n.
 destruct H_lim_b with (U:= (open_ball X d lim_b (/INR (S n)))) (i:= n).
-apply open_ball_open with (x:= lim_b) (r:= /INR (S n)).
+apply open_ball_open.
 red.
 by apply pos_inv_INR_Sn.
-reflexivity.
 constructor.
 rewrite metric_zero.
 by apply pos_inv_INR_Sn.
@@ -1478,9 +1456,8 @@ apply closure_impl_meets_every_open_neighborhood with (proj1_sig gPP).
 destruct  gPP as [gP1 IngCfH].
 simpl.
 by rewrite/CfH. 
-apply open_ball_open with (x:=proj1_sig gPP) (r:=r*/2).
+apply open_ball_open.
 fourier.
-by simpl.
 simpl.
 constructor.
 have umzero: um (proj1_sig gPP) (proj1_sig gPP) = 0. 
@@ -1646,9 +1623,8 @@ have WnBeps: Inhabited (Intersection (IndexedIntersection Wn) (inverse_image (su
 apply dense_meets_every_nonempty_open.
 by apply IWn_dense.
 apply subspace_inc_continuous.
-apply open_ball_open with (x:=fP) (r:=eps). 
+apply open_ball_open.
 apply eps_pos.
-by rewrite/OBeps.
 apply Inhabited_intro with fPP.
 constructor.
 simpl.
@@ -1768,9 +1744,8 @@ destruct hPP as [hP' InCfH_hP'].
 simpl in hP.
 rewrite/hP.
 by rewrite/CfH.
-apply open_ball_open with (x:= hP) (r:=r).
+apply open_ball_open.
 by apply r_pos.
-by auto.
 constructor.
 rewrite metric_zero.
 by red in r_pos.
