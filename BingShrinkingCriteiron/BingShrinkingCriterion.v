@@ -87,40 +87,28 @@ Qed.
 
 Lemma pos_INR_Sn: forall n:nat, 0 < INR (S n).
 Proof.
-move=>n; 
-by apply lt_0_INR, lt_0_Sn.
+by move=> n; apply: lt_0_INR; apply: lt_0_Sn.
 Qed.
 
 Lemma pos_inv_INR_Sn: forall n:nat, 0 < /INR (S n).
 Proof.
-move=>n0.
-apply Rinv_0_lt_compat.
-by apply lt_0_INR; apply lt_0_Sn.
+by move=> n0; apply: Rinv_0_lt_compat; apply: pos_INR_Sn.
 Qed.
 
 Lemma Rlt_inv_INR_S_contravar:
 forall n m:nat, (n < m)%nat -> /INR (S m) < /INR (S n).
 Proof.
 move=> n m nltm.
-apply Rinv_lt_contravar.
-apply Rmult_lt_0_compat.
-apply pos_INR_Sn.
-apply pos_INR_Sn.
-apply lt_INR.
-by apply lt_n_S.
+apply: Rinv_lt_contravar; first by apply: Rmult_lt_0_compat; apply: pos_INR_Sn.
+by apply: lt_INR; apply: lt_n_S.
 Qed.
 
 Lemma Rle_inv_INR_S_contravar:
 forall n m:nat, (n <= m)%nat -> /INR (S m) <= /INR (S n).
 Proof.
 move=> n m nlem.
-apply le_lt_eq_dec in nlem.
-destruct nlem.
-apply Rlt_le.
-by apply Rlt_inv_INR_S_contravar.
-rewrite e.
-apply Req_le.
-reflexivity.
+apply: Rinv_le_contravar; first by apply: pos_INR_Sn.
+by apply: le_INR; apply: le_n_S.
 Qed.
 
 (******)
