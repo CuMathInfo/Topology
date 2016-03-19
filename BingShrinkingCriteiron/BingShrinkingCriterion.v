@@ -515,507 +515,218 @@ Let W (f: CMap) (eps:R):
 Lemma W_is_open: forall (f: CMap) (eps:R),
                        eps > 0 -> open (W f eps). 
 Proof.
-apply NNPP. 
-move=> FH.
-apply not_all_ex_not in FH as [f FH2].
-apply not_all_ex_not in FH2 as [r FH3].
-apply imply_to_and in FH3.
-destruct FH3 as [r_pos notOpen]. 
-have front: exists fr:CMap, 
-  (In (W f r) fr) /\ ~(In (interior (W f r)) fr).
-apply not_all_not_ex.
-move=> FH3.
-have FH4: forall n:CMap, ~(In (W f r) n) \/ (In (interior (W f r))n).
-move=>n.
-have tmp: ~(In (W f r) n /\ ~In (interior (W f r))n)->
-~(In (W f r) n) \/ (In (interior (W f r))n) by tauto.
-apply tmp; clear tmp.
-by apply FH3.
-clear FH3.
-have FH5: forall n:CMap, (In (W f r) n) -> (In (interior (W f r))n).
-move=>n.
-have tmp2: ~(In (W f r) n) \/ (In (interior (W f r))n)
-      ->(In (W f r) n) -> (In (interior (W f r))n)
-                           by tauto.
-apply tmp2; clear tmp2.
-by apply FH4.
-clear FH4.
-have FH6: Included (W f r) (interior (W f r)).
-red.
-by apply FH5.
-have Winterior: (W f r) = interior (W f r).
-apply Extensionality_Ensembles; split.
-by apply FH6.
-clear FH5 FH6.
-by apply interior_deflationary.
-have W_open: open (W f r).
-rewrite Winterior.
-by apply interior_open.
-by move: W_open notOpen.
-destruct front as [fr H].
-destruct H as [fr_in_W fr_in_cl_c_W].
-have fr_in_clcoW: In (Complement (interior (W f r))) fr. 
-red.
-red.
-by apply fr_in_cl_c_W.
-rewrite <- closure_complement in fr_in_clcoW.
-clear fr_in_cl_c_W.
+move=> f r rpos.
+suff ->: W f r = interior (W f r) by apply: interior_open.
+apply: Extensionality_Ensembles; split; last by apply: interior_deflationary.
+move=> fr fr_in_W.
+rewrite -[W f r]Complement_Complement interior_complement => fr_in_clcoW.
 (********* fr found ***************)
-rewrite/W in fr_in_W.
-red in fr_in_W.
-(**********************************) 
 pose RR (n:nat) (g:CMap):Prop := 
   In (Complement (W f r)) g /\ um fr g < (/ INR (S n)).
-
-have choice_gn : exists gn : nat -> CMap,
+have [gn Hgn]: exists gn : nat -> CMap,
   forall n:nat, RR n (gn n).
-apply choice.
-move=>n.
-have Exgn: Inhabited 
-  (Intersection (Complement (W f r)) 
-         (open_ball CMap um fr (/ INR (S n)))).
-apply closure_impl_meets_every_open_neighborhood with fr.
-by apply fr_in_clcoW.
-apply open_ball_open.
-red.
-apply Rinv_0_lt_compat.
-apply lt_0_INR.
-by apply lt_0_Sn.
-constructor.
-rewrite metric_zero.
-apply Rinv_0_lt_compat.
-apply lt_0_INR.
-by apply lt_0_Sn.
-by apply um_metric.
-destruct Exgn as [gn Hgn].
-apply Intersection_inv in Hgn.
-destruct Hgn as [CWgn OBgn].
-destruct OBgn as [frgn].
-exists gn.
-red.
-split.
-by apply CWgn.
-by apply frgn.
-destruct choice_gn as [gn Hgn].
-pose RA (k:nat ) (Ak: X * X * Y * CMap): Prop :=
+- apply: choice => n.
+  have [gn Hgn]:
+    Inhabited (Intersection (Complement (W f r))
+                            (open_ball CMap um fr (/ INR (S n)))).
+  + apply: (closure_impl_meets_every_open_neighborhood _ _ fr) => //.
+    * apply: open_ball_open.
+      auto with *.
+    * constructor. 
+      rewrite metric_zero; last by apply: um_metric.
+      auto with *.
+  case: Hgn => {gn} gn CWgn [frgn].
+  exists gn; split => //.
+pose RA (k:nat) (Ak: X * X * Y * CMap): Prop :=
     (proj1_sig (snd Ak)) (fst (fst (fst Ak))) = (snd (fst Ak)) /\
     (proj1_sig (snd Ak)) (snd (fst (fst Ak))) = (snd (fst Ak)) /\
      d (fst (fst (fst Ak))) (snd (fst (fst Ak))) >= r /\
     um fr (snd Ak) < / INR (S k). 
-have choice_Ak: exists Ak: nat -> X * X * Y * CMap,
+have [abcgn Habcgn]: exists Ak: nat -> X * X * Y * CMap,
    forall k:nat, (RA k (Ak k)).
-apply choice.
-move=>k.
+- apply: choice => k.
 (********)
-set nr:= S O.
+  set nr := S O.
 (********)
-have ABCk: exists (ak bk:X), 
-  (proj1_sig (gn (max nr k)) ak) = (proj1_sig (gn (max nr k)) bk) /\
-   d ak bk >= r.
-apply naan_i_ee.
-move=> FH1.   
-destruct Hgn with (max nr k).
-red in H.
-red in H.  
-rewrite/W in H.
-rewrite/In in H.
-destruct Hgn with (max nr k).
-clear H2.
-destruct H.
-move=> a b pep.
-apply Rfourier_not_ge_lt.
-move:pep.
-have log_lem1: forall p q:Prop, 
-~(p/\q) -> (p -> q -> False) by tauto.
-apply log_lem1.
-by apply FH1.
-destruct ABCk as [ak BCk].
-destruct BCk as [bk Ck].
-exists (ak, bk, (proj1_sig (gn (max nr k)) ak), (gn (max nr k))). 
-rewrite/RA.
-simpl.
-split.
-reflexivity.
-destruct Ck as [Ck dakbk_r].
-split.
-apply eq_sym.
-by apply Ck.
-split.
-by apply dakbk_r.
-destruct Hgn with (max nr k).
-induction k.
-apply Rlt_le_trans with (/ INR (S (max nr 0))).
-by apply H0.
-apply Rle_Rinv.
-by auto with real.
-apply lt_0_INR.
-by apply lt_0_Sn.
-have INR1: 1 = INR(S O) by auto.
-rewrite INR1.
-apply le_INR.
-apply le_n_S.
-by apply Max.le_max_r.
-apply Rlt_le_trans with (/ INR (S (max nr (S k)))).
-by apply H0.
-apply Rle_Rinv.
-by auto with real.
-apply lt_0_INR.
-by apply lt_0_Sn.
-have tmp2: INR (S k) + 1 = INR (S (S k)).
-by auto with real.
-rewrite tmp2; clear tmp2.
-apply le_INR.
-apply le_n_S.
-by apply Max.le_max_r.
-destruct choice_Ak as [abcgn Habcgn].
+  have [ak [bk [Ck dakbk_r]]]: exists (ak bk:X), 
+      (proj1_sig (gn (max nr k)) ak) = (proj1_sig (gn (max nr k)) bk) /\
+      d ak bk >= r.
+  + apply: NNPP => Hnex.
+    case: (Hgn (max nr k)).
+    case=> ak bk Ck.
+    apply: Rnot_ge_lt => dakbk_r.
+    apply: Hnex.
+    by exists ak, bk.
+  exists (ak, bk, (proj1_sig (gn (max nr k)) ak), (gn (max nr k))).
+  repeat split=> //.
+  case: (Hgn (max nr k)) => _ H0.
+  apply: Rlt_le_trans H0 _.
+  apply: Rle_inv_INR_S_contravar.
+  exact: Max.le_max_r.
 pose a_net:Net nat_DS Xt:= (fun (n:nat) => fst (fst (fst (abcgn n)))).
-have cluster_a: exists a: point_set Xt, net_cluster_point a_net a.
-apply compact_impl_net_cluster_point.
-by apply X_compact.
-by apply (inhabits O).
-destruct cluster_a as [lim_a H_lim_a].
+have [lim_a H_lim_a]: exists a: point_set Xt, net_cluster_point a_net a
+  by apply: compact_impl_net_cluster_point => //; apply: (inhabits O).
 pose a_cond (n N:nat):= 
   (n <= N)%nat /\ d lim_a (a_net N) < / INR (S n).
-have a_cond_choice: exists Na : nat -> nat, forall n, a_cond n (Na n).
-apply choice.
-move=>n.
-destruct H_lim_a with (U:= (open_ball X d lim_a (/INR (S n)))) (i:= n).
-apply open_ball_open.
-red.
-by apply pos_inv_INR_Sn.
-constructor.
-rewrite metric_zero.
-by apply pos_inv_INR_Sn.
-assumption.
-destruct H.
-destruct H0.
-simpl in H.
-simpl in x.
-exists x.
-red.
-split.
-assumption.
-by apply H0.
-destruct a_cond_choice as [Na H_Na].
-red in H_Na.
+have [Na H_Na]: exists Na : nat -> nat, forall n, a_cond n (Na n).
+- apply: choice => n.
+  case: (H_lim_a (open_ball X d lim_a (/INR (S n))) _ _ n).
+  + apply: open_ball_open.
+  + auto with *.
+  + constructor.
+    rewrite metric_zero => //.
+    auto with *.
+  + move=> x [H [H0]].
+    by exists x.
 pose b_net:Net nat_DS Xt:= (fun (n:nat) => snd (fst (fst (abcgn (Na n))))).
-have cluster_b: exists b: point_set Xt, net_cluster_point b_net b.
-apply compact_impl_net_cluster_point.
-by apply X_compact.
-by apply (inhabits O).
-destruct cluster_b as [lim_b H_lim_b].
+have [lim_b H_lim_b]: exists b: point_set Xt, net_cluster_point b_net b
+  by apply: compact_impl_net_cluster_point => //; apply: (inhabits O).
 pose ab_cond (n N:nat):= (n <= N)%nat
   /\ (d lim_a (a_net (Na N)) < / INR (S n))
   /\ (d lim_b (b_net N) < / INR (S n)).
-have ab_cond_choice: exists Nab : nat -> nat,
- forall n, ab_cond n (Nab n).
-apply choice.
-move=>n.
-destruct H_lim_b with (U:= (open_ball X d lim_b (/INR (S n)))) (i:= n).
-apply open_ball_open.
-red.
-by apply pos_inv_INR_Sn.
-constructor.
-rewrite metric_zero.
-by apply pos_inv_INR_Sn.
-assumption.
-destruct H.
-destruct H0.
-simpl in H.
-simpl in x.
-exists x.
-red.
-split.
-assumption.
-split.
-apply Rlt_le_trans with (/INR (S x)).
-by apply H_Na.
-apply Rle_inv_INR_S_contravar.
-by apply H.
-by apply H0.
-destruct ab_cond_choice as [Nab H_Nab].
-red in H_Nab.
+have [Nab H_Nab]: exists Nab : nat -> nat, forall n, ab_cond n (Nab n).
+- apply: choice => n.
+  case: (H_lim_b (open_ball X d lim_b (/INR (S n))) _ _ n).
+  + apply: open_ball_open.
+  + auto with *.
+  + constructor.
+    rewrite metric_zero => //.
+    auto with *.
+  + move=> x [H [H0]].
+    exists x; repeat split => //.
+    apply: Rlt_le_trans (_ : _ < /INR (S x)) _; first by case: (H_Na x).
+    exact: Rle_inv_INR_S_contravar.
 (*******************)
 pose aN (n:nat):X :=  a_net (Na (Nab n)).
 pose bN (n:nat):X :=  b_net (Nab n). 
 pose cN (n:nat): Y :=  snd (fst (abcgn (Na (Nab n)))). 
 pose gN (n:nat): CMap := snd (abcgn (Na (Nab n))).
 (********************)
-have gNaN_cN : forall n:nat,
-   proj1_sig (gN n) (aN n) = (cN n).
-move=>n.
-rewrite/(gN n) /(aN n) /(cN n).
-rewrite/(a_net (Na (Nab n))).
-destruct Habcgn with (Na (Nab n)).
-by apply H.
-have gNbN_cN : forall n:nat,
-   proj1_sig (gN n) (bN n) = (cN n).
-move=>n.
-rewrite/(gN n) /(bN n) /(cN n).
-rewrite/(b_net (Nab n)).
-destruct Habcgn with (Na (Nab n)) as [Ha [Hb H]].
-by apply Hb.
-have daNbN_r : forall n:nat, d (aN n) (bN n) >= r.
-move=>n.
-rewrite/(aN n) /(bN n).
-rewrite/(a_net (Na (Nab n)))  /(b_net (Nab n)).
-destruct Habcgn with (Na (Nab n)) as [Ha [Hb [Hd H]]].
-by apply Hd.
+have gNaN_cN : forall n:nat, proj1_sig (gN n) (aN n) = (cN n)
+  by move=> n; case: (Habcgn (Na (Nab n))).
+have gNbN_cN : forall n:nat, proj1_sig (gN n) (bN n) = (cN n)
+  by move=> n; case: (Habcgn (Na (Nab n))) => _ [].
+have daNbN_r : forall n:nat, d (aN n) (bN n) >= r
+  by move=> n; case: (Habcgn (Na (Nab n))) => _ [_ []].
 have umfrgN : forall n:nat, um fr (gN n) < / INR (S n).
-move=>n.
-rewrite/(gN n).
-destruct Habcgn with (Na (Nab n)) as [Ha [Hb [Hd Hu]]].
-apply Rlt_le_trans with (/ INR (S (Na (Nab n)))).
-by apply Hu.
-apply Rle_inv_INR_S_contravar.
-apply le_trans with (Nab n).
-destruct H_Nab with n as [H _].
-by apply H.
-destruct H_Na with (Nab n) as [H _].
-by apply H.
+- move=> n.
+  apply: Rlt_le_trans (_ : _ < / INR (S (Na (Nab n)))) _;
+    first by case: (Habcgn (Na (Nab n))) => _ [_ []].
+  apply: Rle_inv_INR_S_contravar.
+  apply: le_trans (_ : (_ <= Nab n)%nat) _; first by case: (H_Nab n).
+  by case: (H_Na (Nab n)).
 have dlimaaN: forall n:nat, d lim_a (aN n) < / INR (S n).
-move=>n.
-rewrite/(aN n).
-apply Rlt_le_trans with (/ INR (S (Nab n))).
-destruct H_Na with (Nab n).
-by apply H0.
-apply Rle_inv_INR_S_contravar.
-destruct H_Nab with n.
-by apply H.
-have dlimbbN: forall n:nat, d lim_b (bN n) < / INR (S n).
-move=>n.
-rewrite/(bN n).
-destruct H_Nab with n.
-destruct H0.
-by apply H1.
+- move=> n.
+  apply: Rlt_le_trans (_ : _ < / INR (S (Nab n))) _;
+    first by case: (H_Na (Nab n)).
+  apply: Rle_inv_INR_S_contravar.
+  by case: (H_Nab n).
+have dlimbbN: forall n:nat, d lim_b (bN n) < / INR (S n)
+  by move=> n; case: (H_Nab n) => _ [].
 have d_metrizes: metrizes Xt d 
-by apply (MetricTopology_metrizable X d d_metric).
+  by apply: MetricTopology_metrizable.
 have d'_metrizes: metrizes Yt d' 
-by apply (MetricTopology_metrizable Y d' d'_metric).
+  by apply: MetricTopology_metrizable.
 have frab: (proj1_sig fr lim_a) = (proj1_sig fr lim_b).
-apply NNPP.
-move=> fra_not_frb.
-set eps := d' (proj1_sig fr lim_a) (proj1_sig fr lim_b).
-have eps_nonneg: 0 <= eps.
-rewrite/eps.
-apply Rge_le.
-by apply metric_nonneg.
-red in eps_nonneg.
-destruct eps_nonneg.
-pose fr_conti:= proj2_sig fr.
-simpl in fr_conti.
-destruct fr_conti as [_ fr_conti].
-have fr_conti_at_a: forall epsa : R, epsa > 0 ->
-  exists deltaa:R, deltaa > 0 /\
-  forall a': X, d lim_a a' < deltaa ->
-    d' (proj1_sig fr lim_a) (proj1_sig fr a') < epsa.
-apply (metric_space_fun_continuity_converse 
-        Xt Yt (proj1_sig fr) lim_a d d' d_metrizes d'_metrizes).
-apply continuous_func_continuous_everywhere.
-by apply fr_conti.
-have fr_conti_at_b: forall epsb : R, epsb > 0 ->
-  exists deltab:R, deltab > 0 /\
-  forall b': X, d lim_b b' < deltab ->
-    d' (proj1_sig fr lim_b) (proj1_sig fr b') < epsb.
-apply (metric_space_fun_continuity_converse 
-        Xt Yt (proj1_sig fr) lim_b d d' d_metrizes d'_metrizes).
-apply continuous_func_continuous_everywhere.
-by apply fr_conti.
-destruct fr_conti_at_a with (/4*eps) as [dela fr_conti_a].
-by fourier.
-destruct fr_conti_a as [dela_pos fr_conti_a].
-destruct fr_conti_at_b with (/4*eps) as [delb fr_conti_b].
-by fourier.
-destruct fr_conti_b as [delb_pos fr_conti_b].
-clear fr_conti_at_a fr_conti_at_b.
-set del := Rmin dela delb.
-have N_choice: exists N:nat, (N > 0)%nat /\ /INR N < Rmin (/4*eps) del.
-apply RationalsInReals.inverses_of_nats_approach_0.
-red.
-apply Rmin_pos.
-by fourier.
-rewrite/del.
-apply Rmin_pos.
-by apply dela_pos.
-by apply delb_pos.
-destruct N_choice as [N H_N].
-destruct H_N as [N_pos N_large].
-have dfrafrb: d' (proj1_sig fr lim_a) (proj1_sig fr lim_b) <
- /4*eps + /4*eps + /4*eps + /4*eps.
-apply Rle_lt_trans 
-    with (d' (proj1_sig fr lim_a) (proj1_sig fr (bN N)) + 
-          d' (proj1_sig fr (bN N)) (proj1_sig fr lim_b)).
-apply triangle_inequality.
-by apply d'_metric.
-apply Rplus_lt_compat.
-apply Rle_lt_trans
-   with (d' (proj1_sig fr lim_a) (proj1_sig (gN N) (bN N)) + 
-         d' (proj1_sig (gN N) (bN N)) (proj1_sig fr (bN N))).
-apply triangle_inequality.
-by apply d'_metric.
-apply Rplus_lt_compat.
-apply Rle_lt_trans
-   with (d' (proj1_sig fr lim_a) (proj1_sig (gN N) (aN N)) +
-         d' (proj1_sig (gN N) (aN N)) (proj1_sig (gN N) (bN N))).
-apply triangle_inequality.
-by apply d'_metric.
-rewrite (gNaN_cN N).
-rewrite (gNbN_cN N).
-rewrite metric_zero.
-rewrite Rplus_0_r.
-apply Rle_lt_trans 
-  with (d' (proj1_sig fr lim_a) (proj1_sig fr (aN N)) +
-        d' (proj1_sig fr (aN N)) (cN N)).
-apply triangle_inequality.
-by apply d'_metric.
-apply Rplus_lt_compat.
-apply fr_conti_a.
-apply Rlt_le_trans with del. 
-apply Rlt_le_trans with (Rmin (/4*eps) del).
-apply Rlt_trans with (/INR N).
-apply Rlt_trans with (/INR (S N)).
-by apply dlimaaN.
-apply Rinv_lt_contravar.
-apply Rmult_lt_0_compat.
-apply lt_0_INR.
-by red in N_pos.
-by apply pos_INR_Sn.
-apply lt_INR.
-by apply lt_n_Sn.
-apply Rmin_glb_lt.
-apply Rlt_le_trans with (Rmin (/4*eps) del).
-by apply N_large.
-by apply Rmin_l.
-apply Rlt_le_trans with (Rmin (/4*eps) del).
-by apply N_large.
-by apply Rmin_r.
-by apply Rmin_r.
-rewrite/del.
-by apply Rmin_l.
-rewrite <- (gNaN_cN N).
-apply Rle_lt_trans with (um fr (gN N)).
-by apply Rle_d'_um.
-apply Rlt_le_trans with (/INR (S N)).
-by apply umfrgN.
-apply Rlt_le.
-apply Rlt_le_trans with (/INR N). 
-apply Rinv_lt_contravar.
-apply Rmult_lt_0_compat.
-apply lt_0_INR.
-by red in N_pos.
-by apply pos_INR_Sn. 
-apply lt_INR.
-by apply lt_n_Sn.
-apply Rlt_le.
-apply Rlt_le_trans with (Rmin (/4*eps) del).
-by apply N_large.
-by apply Rmin_l.
-by apply d'_metric.
-apply Rle_lt_trans with (um fr (gN N)).
-rewrite metric_sym.
-by apply Rle_d'_um.
-by apply d'_metric.
-apply Rlt_le_trans with (/INR (S N)).
-by apply umfrgN.
-apply Rlt_le.
-apply Rlt_le_trans with (/INR N). 
-apply Rinv_lt_contravar.
-apply Rmult_lt_0_compat.
-apply lt_0_INR.
-by red in N_pos.
-by apply pos_INR_Sn. 
-apply lt_INR.
-by apply lt_n_Sn.
-apply Rlt_le.
-apply Rlt_le_trans with (Rmin (/4*eps) del).
-by apply N_large.
-by apply Rmin_l.
-rewrite metric_sym.
-apply fr_conti_b.
-apply Rlt_le_trans with del.
-apply Rlt_le_trans with  (Rmin (/4* eps) del).
-apply Rlt_trans with (/INR N).
-apply Rlt_trans with (/INR (S N)).
-by apply dlimbbN.
-apply Rinv_lt_contravar. 
-apply Rmult_lt_0_compat.
-apply lt_0_INR.
-by red in N_pos.
-by apply pos_INR_Sn.
-apply lt_INR.
-by apply lt_n_Sn.
-by apply N_large.
-by apply Rmin_r.
-rewrite/del.
-by apply Rmin_r.
-by apply d'_metric.
-have eps4:
-/4*eps + /4*eps + /4*eps + /4*eps = eps by field.
-rewrite eps4 in dfrafrb.
-rewrite/eps in dfrafrb.
-apply Rlt_not_eq in dfrafrb.
-destruct dfrafrb.
-by reflexivity.
-rewrite/eps in H.
-destruct fra_not_frb.
-apply metric_strict with d'.
-by apply d'_metric.
-rewrite H.
-by reflexivity.
-
-have dlimalimb_r: d lim_a lim_b < r.
-apply fr_in_W.
-by apply frab.
+- apply: (metric_strict _ d') => //.
+  apply: Rle_antisym; last by apply: Rge_le; apply: metric_nonneg.
+  apply: Rnot_gt_le.
+  set eps := d' (proj1_sig fr lim_a) (proj1_sig fr lim_b).
+  move=> eps_pos.
+  case: (proj2_sig fr) => _ fr_conti.
+  have fr_conti_at_a: forall epsa : R, epsa > 0 ->
+    exists deltaa:R, deltaa > 0 /\
+    forall a': X, d lim_a a' < deltaa ->
+      d' (proj1_sig fr lim_a) (proj1_sig fr a') < epsa.
+    by apply: (metric_space_fun_continuity_converse Xt Yt _ _ d d') => //;
+       apply: continuous_func_continuous_everywhere.
+  have fr_conti_at_b: forall epsb : R, epsb > 0 ->
+    exists deltab:R, deltab > 0 /\
+    forall b': X, d lim_b b' < deltab ->
+      d' (proj1_sig fr lim_b) (proj1_sig fr b') < epsb.
+    by apply: (metric_space_fun_continuity_converse Xt Yt _ _ d d') => //;
+       apply: continuous_func_continuous_everywhere.
+  case: (fr_conti_at_a (/4*eps)); first by fourier.
+  move=> dela [dela_pos fr_conti_a] {fr_conti_at_a}.
+  case: (fr_conti_at_b (/4*eps)); first by fourier.
+  move=> delb [delb_pos fr_conti_b] {fr_conti_at_b}.
+  set del := Rmin dela delb.
+  have [N [N_pos N_large]]:
+    exists N:nat, (N > 0)%nat /\ /INR N < Rmin (/4*eps) del
+    by apply: RationalsInReals.inverses_of_nats_approach_0;
+       do !apply: Rmin_pos => //; fourier.
+  have HinvN: / INR (S N) < / INR N.
+  + apply: Rinv_lt_contravar.
+    apply: Rmult_lt_0_compat; auto with *.
+    exact: lt_INR.
+  have: d' (proj1_sig fr lim_a) (proj1_sig fr lim_b) <
+        /4*eps + /4*eps + /4*eps + /4*eps.
+  + apply: Rle_lt_trans
+             (_ : _ <= (d' (proj1_sig fr lim_a) (proj1_sig fr (bN N)) + 
+                        d' (proj1_sig fr (bN N)) (proj1_sig fr lim_b))) _;
+      first by apply: triangle_inequality.
+    apply: Rplus_lt_compat; last first.
+    * rewrite metric_sym //.
+      apply: fr_conti_b.
+      apply: Rlt_le_trans (_ : _ < del) (Rmin_r _ _).
+      apply: Rlt_le_trans (_ : _ < Rmin (/4*eps) del) (Rmin_r _ _).
+      apply: Rlt_trans _ N_large.
+      exact: Rlt_trans (dlimbbN _) _.
+    apply: Rle_lt_trans
+           (_ : _ <= (d' (proj1_sig fr lim_a) (proj1_sig (gN N) (bN N)) + 
+                      d' (proj1_sig (gN N) (bN N)) (proj1_sig fr (bN N)))) _;
+      first by apply: triangle_inequality.
+    apply: Rplus_lt_compat; last first.
+    * rewrite metric_sym //.
+      apply: Rle_lt_trans (Rle_d'_um _ _ _) _.
+      apply: Rlt_trans (umfrgN _) _.
+      apply: Rlt_trans HinvN _.
+      exact: Rlt_le_trans N_large (Rmin_l _ _).
+    apply: Rle_lt_trans
+             (_ : _ <= d' (proj1_sig fr lim_a) (proj1_sig (gN N) (aN N)) +
+                       d' (proj1_sig (gN N) (aN N)) (proj1_sig (gN N) (bN N))) _;
+      first by apply: triangle_inequality.
+    rewrite gNaN_cN gNbN_cN metric_zero // Rplus_0_r.
+    apply: Rle_lt_trans
+             (_ : _ <= d' (proj1_sig fr lim_a) (proj1_sig fr (aN N)) +
+                       d' (proj1_sig fr (aN N)) (cN N)) _;
+      first by apply: triangle_inequality.
+    apply: Rplus_lt_compat.
+    * apply: fr_conti_a.
+      apply: Rlt_le_trans (_ : _ < del) (Rmin_l _ _).
+      apply: Rlt_le_trans (_ : _ < Rmin (/4*eps) del) (Rmin_r _ _).
+      apply: Rlt_trans _ N_large.
+      exact: Rlt_trans (dlimaaN _) _.
+    * rewrite -gNaN_cN.
+      apply: Rle_lt_trans (Rle_d'_um _ _ _) _.
+      apply: Rlt_trans (umfrgN _) _.
+      apply: Rlt_trans HinvN _.
+      exact: Rlt_le_trans N_large (Rmin_l _ _).
+  rewrite [x in _ < x](_ : _ = eps); last by field.
+  exact: Rlt_irrefl.
+have dlimalimb_r: d lim_a lim_b < r
+  by apply: fr_in_W.
 set eps2 := r - d lim_a lim_b.
 have eps2_pos: eps2 > 0.
-rewrite/eps2.
-apply Rgt_minus.
-by red.
-have N_choice: exists N:nat, (N > 0)%nat /\ / INR N < /2* eps2.
-apply RationalsInReals.inverses_of_nats_approach_0.
-fourier.
-destruct N_choice as [N [N_pos INR_e2]].
-have invSN_e2: / INR (S N) < /2 * eps2.
-apply Rlt_trans with (/ INR N).
-apply Rinv_lt_contravar.
-apply Rmult_lt_0_compat.
-apply lt_0_INR.
-by red in N_pos.
-apply lt_0_INR.
-by apply lt_0_Sn.
-apply lt_INR. 
-by apply lt_n_Sn.
-by apply INR_e2.
-have daNbN_lt_r: d(aN N) (bN N) < r.
-apply Rle_lt_trans with (d (aN N) lim_b + d lim_b (bN N)).
-apply triangle_inequality.
-by apply d_metric.
-apply Rle_lt_trans with (d (aN N) lim_a + d lim_a lim_b + d lim_b (bN N)).
-apply Rplus_le_compat_r.
-apply triangle_inequality.
-by apply d_metric.
-have dlalb: d lim_a lim_b = r - eps2.
-rewrite/eps2.
-by field.
-rewrite dlalb.
-apply Rlt_trans with (d (aN N) lim_a + (r - eps2) + /2* eps2).
-apply Rplus_lt_compat_l.
-apply Rlt_trans with (/ INR (S N)).
-apply dlimbbN.
-by apply invSN_e2.
-apply Rlt_le_trans with (/2*eps2 + (r- eps2) + /2*eps2).
-apply Rplus_lt_compat_r.
-apply Rplus_lt_compat_r.
-apply Rlt_trans with (/ INR (S N)).
-rewrite metric_sym.
-apply dlimaaN.
-by apply d_metric.
-by apply invSN_e2.
-apply Req_le.
-field.
-apply Rlt_not_ge in daNbN_lt_r.
-destruct daNbN_lt_r.
-by apply daNbN_r. 
+  by apply: Rgt_minus.
+have [N [N_pos INR_e2]]: exists N:nat, (N > 0)%nat /\ / INR N < /2 * eps2.
+  by apply: RationalsInReals.inverses_of_nats_approach_0; fourier.
+apply: Rlt_not_ge (daNbN_r N).
+have HinvSN: / INR (S N) < /2 * eps2.
+- apply: Rlt_trans INR_e2.
+  apply: Rinv_lt_contravar.
+  apply: Rmult_lt_0_compat; auto with *.
+  exact: lt_INR.
+rewrite (_ : r = /2 * eps2 + ((r - eps2) + /2 * eps2)); last by field.
+apply: Rle_lt_trans (_ : _ <= d (aN N) lim_a + d lim_a (bN N)) _;
+  first by apply: triangle_inequality.
+apply: Rplus_lt_compat;
+  first by rewrite (metric_sym _ d) //; exact: Rlt_trans (dlimaaN _) HinvSN.
+apply: Rle_lt_trans (_ : _ <= d lim_a lim_b + d lim_b (bN N)) _;
+  first by apply: triangle_inequality.
+apply: Rplus_le_lt_compat;
+  last by exact: Rlt_trans (dlimbbN _) HinvSN.
+by rewrite /eps2; fourier.
 Qed. (*** W_is_open is defined ***)
 
 Lemma bijection_complement:
