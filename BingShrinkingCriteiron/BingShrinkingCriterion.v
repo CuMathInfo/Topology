@@ -148,7 +148,7 @@ Lemma open_ball_open:
 Proof.
 move=> x r H_r_pos.
 apply: open_ball_is_open => //.
-by apply MetricTopology_metrizable.
+by apply: MetricTopology_metrizable.
 Qed.
 
 Lemma MetricTopology_Hausdorff: Hausdorff (MetricTopology dt dt_metric). 
@@ -258,7 +258,7 @@ constructor.
   case: sup => /= y [Hyub Hyleast].
   have j: Im Full_set (fun x:X => d'(f0 x) (g0 x))
           = Im Full_set (fun x:X => d'(g0 x) (f0 x))
-    by apply Extensionality_Ensembles; split => /=;
+    by apply: Extensionality_Ensembles; split => /=;
        move => _ [x1 _ _ ->]; exists x1 => //; rewrite metric_sym.
   apply: Rle_antisym.
   + by apply: Hxleast; rewrite j; apply: Hyub.
@@ -335,7 +335,7 @@ have cauchy_yn: forall x:X, cauchy d' (yn x).
   by apply: cau_fn.
 pose choice_R (x:X) (y:Y): Prop := net_limit (yn x) y. 
 have choice_f0: forall x:X, exists y:Y, (choice_R x y)
-  by move=> x; apply cpl_d'; apply cauchy_yn.
+  by move=> x; apply: cpl_d'; apply: cauchy_yn.
 have [f0 Hf0]: exists f0: X->Y, 
   (forall x:X, choice_R x (f0 x)) by apply: choice. 
 have Bf0: bound (Im Full_set (fun x:X=> d' (y0 x) (f0 x))).
@@ -345,7 +345,7 @@ have Bf0: bound (Im Full_set (fun x:X=> d' (y0 x) (f0 x))).
   exists (ub+1) => _ [x _ _ ->].
   apply: Rle_trans (_ : _ <= (d' (y0 x) (proj1_sig (fn n0) x)
                               + d' (proj1_sig (fn n0) x) (f0 x))) _;
-    first by apply triangle_inequality.
+    first by apply: triangle_inequality.
   apply: Rplus_le_compat.
   + apply: (Bfn0 (d' (y0 x) (proj1_sig (fn n0) x))).
     by exists x.
@@ -354,7 +354,7 @@ have Bf0: bound (Im Full_set (fun x:X=> d' (y0 x) (f0 x))).
     * move=> n hn.
       apply: Rle_lt_trans (Rle_d'_um _ _ _) _.
       by apply: Bd1.
-    apply Rnot_lt_le => Fh.
+    apply: Rnot_lt_le => Fh.
     set ep := d' (proj1_sig (fn n0) x) (f0 x) - 1.
     have hpos_ep: ep > 0 by apply: Rgt_minus.
     case: (Hf0 x (open_ball Y d' (f0 x) ep)).
@@ -363,7 +363,7 @@ have Bf0: bound (Im Full_set (fun x:X=> d' (y0 x) (f0 x))).
       by rewrite metric_zero.
     * rewrite /= => x0 H1.
       set m0 := max n0 x0.
-      case: (H1 m0); first by apply Max.le_max_r.
+      case: (H1 m0); first by apply: Max.le_max_r.
       have H3: d' (proj1_sig (fn n0) x) (yn x m0) < 1
         by apply: d'um1; apply: Max.le_max_l.
       apply: Rle_not_gt.
@@ -396,7 +396,7 @@ have Cf0: @continuous Xt Yt f0.
       - rewrite /= => x1 H1.
         set N1 := max N x1.
         have f0ynx1 : d' (f0 x0) (yn x0 N1) < de
-          by case: (H1 N1) => //; by apply Max.le_max_r.
+          by case: (H1 N1) => //; by apply: Max.le_max_r.
         have ynNynN1 : d' (yn x0 N1) (yn x0 N) < /4 * eps
           by apply: Rle_lt_trans (Rle_d'_um _ _ _) _; apply: H => //;
              apply: Max.le_max_l.
@@ -404,7 +404,7 @@ have Cf0: @continuous Xt Yt f0.
         + apply: Rle_lt_trans (_ : _ <= (d' (f0 x0) (yn x0 N1)
                                          + d' (yn x0 N1) (yn x0 N))) _;
             first by apply: triangle_inequality.
-            by apply Rplus_lt_compat.
+            by apply: Rplus_lt_compat.
         apply: Rge_not_lt.
         rewrite /de /yn.
         by fourier.
@@ -736,7 +736,7 @@ forall (Xt Yt:TopologicalSpace)
  Complement (Im U f) = Im (Complement U) f.
 Proof.
 move=> XT YT f U [inj_f surj_f].
-apply Extensionality_Ensembles; split => y H_y.
+apply: Extensionality_Ensembles; split => y H_y.
 - case: (surj_f y) => x H.
   exists x => // In_U_x.
   apply: H_y.

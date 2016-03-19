@@ -309,7 +309,7 @@ have [x0] : Inhabited (Intersection (V 0%nat) U)
   by apply: dense_meets_every_nonempty_open => //;
      [by case: (H_od 0%nat) | exact: Inhabited_intro H_In_U_x].
 case/open_ball_in_open_set;
-  first by apply open_intersection2 => //; case (H_od 0%nat).
+  first by apply: open_intersection2 => //; case (H_od 0%nat).
 move=> r0_t [r0_t_pos Inc_ball_V0U].
 set r0:=r0_t/2.
 have r0_pos: r0>0 by rewrite /r0; fourier.
@@ -397,7 +397,7 @@ set rp0 := exist (fun r:R => r>0)r0 r0_pos.
     * rewrite -plus_n_O metric_zero // /Rminus Rplus_opp_r Rmult_0_r.
       by auto with real.
     * apply: Rle_trans (_ : _ <= d (x_n n) (x_n (n + k)%nat) + d (x_n (n + k)%nat) (x_n (n + (S k))%nat)) _;
-        first by apply triangle_inequality.
+        first by apply: triangle_inequality.
       apply: Rle_trans (Rplus_le_compat_r _ _ _ IHk) _.
       apply: Rlt_le.
       apply: Rlt_le_trans (Rplus_lt_compat_l _ _ _ (x_ni_x_nSi_r_n _ _)) _.
@@ -409,7 +409,7 @@ set rp0 := exist (fun r:R => r>0)r0 r0_pos.
     have [N HN]: exists N:nat, forall n:nat,
           (n >=N)%nat -> (/2)^n <= (/r0) * (/2) * eps.  
     * apply: pow_inv_2_n_approach_0.
-      by do !apply: Rmult_gt_0_compat => //; apply Rinv_0_lt_compat; auto with real.
+      by do !apply: Rmult_gt_0_compat => //; apply: Rinv_0_lt_compat; auto with real.
     exists N.
     have Hn: forall n:nat, (n>=N)%nat -> d (x_n N) (x_n n) < r0 * ((/2)^N).
     * move=>n ngeN.
@@ -427,7 +427,7 @@ set rp0 := exist (fun r:R => r>0)r0 r0_pos.
       by auto with real.
     move=> m1 n1 m1gtN n1gtN.
     apply: Rle_lt_trans (_ : _ <= d (x_n m1) (x_n N) + d (x_n N) (x_n n1)) _;
-      first by apply triangle_inequality. 
+      first by apply: triangle_inequality. 
     rewrite (metric_sym _ _ d_metric).
     apply: Rlt_le_trans (Rplus_lt_compat _ _ _ _ (Hn _ m1gtN) (Hn _ n1gtN)) _.
     rewrite [x in x <= _](_ : _ = 2 * r0 * (/2)^N); last by field.
@@ -471,7 +471,7 @@ set rp0 := exist (fun r:R => r>0)r0 r0_pos.
 (************************************)
     apply: (Inhabited_intro _ _ xL).
     split.
-    * apply indexed_intersection_intro => n.
+    * apply: indexed_intersection_intro => n.
       set D_n:= open_ball (point_set X) d xL (r_n n).
       case: (Lim D_n).
       - set F_n := Singleton D_n.
@@ -489,12 +489,12 @@ set rp0 := exist (fun r:R => r>0)r0 r0_pos.
         set n1 := max x2 n.
         have [d_xL_xn1]: In D_n (x_n n1).
         + apply: H1.
-          by apply Max.le_max_l.
+          by apply: Max.le_max_l.
         set k1:= (n1 - n)%nat.
         have le_0_k1: le 0%nat k1.
         + rewrite (_: (0 = n - n)%nat); last by auto with *. 
           apply: minus_le_compat_r.
-          by apply Max.le_max_r.
+          by apply: Max.le_max_r.
           have d_xn_xn1: d (x_n n) (x_n n1) <= r_n n.
           * rewrite (_: n1 = (n + k1)%nat);
               last by apply: le_plus_minus; apply: Max.le_max_r.
@@ -510,7 +510,7 @@ set rp0 := exist (fun r:R => r>0)r0 r0_pos.
           apply: bVn.
           constructor.
           apply: Rle_lt_trans (_ : _ <= d (x_n n) (x_n n1) + d (x_n n1) xL) _;
-            first by apply triangle_inequality.
+            first by apply: triangle_inequality.
           rewrite [d (x_n n1) xL]metric_sym //.
           apply: Rle_lt_trans (Rplus_le_compat_r _ _ _ d_xn_xn1) _.
           apply: Rlt_le_trans (Rplus_lt_compat_l _ _ _ d_xL_xn1) _.
