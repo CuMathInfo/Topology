@@ -507,27 +507,27 @@ by apply Im_intro with x.*)
   + exact: continuous_surj_factorization_is_surjective.
 Qed. (* continuous_bounded *)
 
-Let W (f: CMap) (eps:R):
+Let W (eps:R):
  Ensemble (point_set CMapt) :=
  fun g:CMap =>  forall (x1 x2:X), 
   (proj1_sig g x1) = (proj1_sig g x2) -> d x1 x2 < eps. 
 
-Lemma W_is_open: forall (f: CMap) (eps:R),
-                       eps > 0 -> open (W f eps). 
+Lemma W_is_open: forall (eps:R),
+                       eps > 0 -> open (W eps). 
 Proof.
-move=> f r rpos.
-suff ->: W f r = interior (W f r) by apply: interior_open.
+move=> r rpos.
+suff ->: W r = interior (W r) by apply: interior_open.
 apply: Extensionality_Ensembles; split; last by apply: interior_deflationary.
 move=> fr fr_in_W.
-rewrite -[W f r]Complement_Complement interior_complement => fr_in_clcoW.
+rewrite -[W r]Complement_Complement interior_complement => fr_in_clcoW.
 (********* fr found ***************)
 pose RR (n:nat) (g:CMap):Prop := 
-  In (Complement (W f r)) g /\ um fr g < (/ INR (S n)).
+  In (Complement (W r)) g /\ um fr g < (/ INR (S n)).
 have [gn Hgn]: exists gn : nat -> CMap,
   forall n:nat, RR n (gn n).
 - apply: choice => n.
   have [gn Hgn]:
-    Inhabited (Intersection (Complement (W f r))
+    Inhabited (Intersection (Complement (W r))
                             (open_ball CMap um fr (/ INR (S n)))).
   + apply: (closure_impl_meets_every_open_neighborhood _ _ fr) => //.
     * apply: open_ball_open.
@@ -927,7 +927,7 @@ have CfH_closed: (@closed CMapt CfH) by apply closure_closed.
 assumption.
 
 set Wn: IndexedFamily nat (point_set CfHt) := fun n:nat =>
-   inverse_image (subspace_inc CfH)  (W fP (/INR (S n))).
+   inverse_image (subspace_inc CfH)  (W (/INR (S n))).
 have WnOD: forall n:nat, open (Wn n) /\ dense (Wn n).   
 move=>n.
 apply conj.
