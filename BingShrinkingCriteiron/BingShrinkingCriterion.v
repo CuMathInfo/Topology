@@ -810,418 +810,204 @@ Theorem Bing_Shrinking_Theorem:
  forall f: point_set Xt -> point_set Yt, 
 continuous f -> surjective f ->
  (Bing_shrinkable f -> approximable_by_homeos f).    
-
 Proof.
-move=> f f_conti f_surj f_BS.
-move=> eps eps_pos.
+move=> f f_conti f_surj f_BS eps eps_pos.
 have f_bdd_conti: bound (Im Full_set (fun x:X=> d' (y0 x) (f x)))/\
-                           @continuous Xt Yt f.
-split.
-apply continuous_bounded.
-assumption.
-assumption.
+                           @continuous Xt Yt f
+  by split =>//; apply: continuous_bounded.
 set fP := exist 
   (fun f: X->Y =>  bound (Im Full_set (fun x:X=> d' (y0 x) (f x)))/\
                            @continuous Xt Yt f) f f_bdd_conti. 
-
 set fH : Ensemble (point_set CMapt) := 
   fun gP: CMap => exists hx: point_set Xt -> point_set Xt,
                   homeomorphism hx /\
                   forall x: point_set Xt, (proj1_sig gP) x = f (hx x).
-
-have InfHfP: In fH fP.
-red.
-red.
-exists (id_map Xt).
-split.
-by apply id_map_homeomorphism.
-move=> x.
-simpl.
-by rewrite/id_map.
+have InfHfP: In fH fP
+  by exists (id_map Xt); split=>//; apply: id_map_homeomorphism.
 set CfH := closure fH.
 set CfHt := SubspaceTopology CfH.
 (* Caution: point_set CfHt = { gP:CfH | In CfH gP } *)
 set um_restriction := fun f1PP f2PP: point_set CfHt =>
                                   um (proj1_sig f1PP) (proj1_sig f2PP).
-have um_restriction_metric: metric um_restriction. 
-apply d_restriction_metric. 
-by apply um_metric.
+have um_restriction_metric: metric um_restriction
+  by apply: d_restriction_metric; apply: um_metric.
 have CfHt_baire: baire_space CfHt.
-apply BaireCategoryTheorem with um_restriction um_restriction_metric.
-apply d_restriction_metrizes.
-have um_is_metric: metric um by apply um_metric.
-have um_is_complete: complete um um_metric.
-apply um_complete.
-apply compact_complete.
-rewrite - /Yt.
-by apply Y_compact.
-apply (closed_subset_of_complete_is_complete CMap um um_is_metric CfH).
-by apply um_is_complete.
-have CfH_closed: (@closed CMapt CfH) by apply closure_closed.
-assumption.
-
-set Wn: IndexedFamily nat (point_set CfHt) := fun n:nat =>
-   inverse_image (subspace_inc CfH)  (W (/INR (S n))).
+- apply: (BaireCategoryTheorem _ um_restriction) => //;
+    first by exact: d_restriction_metrizes.
+  have um_is_metric: metric um by apply: um_metric.
+  have um_is_complete: complete um um_metric
+    by apply: um_complete; apply: compact_complete; exact: Y_compact.
+  apply: closed_subset_of_complete_is_complete => //.
+  exact: closure_closed.
+set Wn: IndexedFamily nat (point_set CfHt) :=
+  fun n:nat => inverse_image (subspace_inc CfH)  (W (/INR (S n))).
 have WnOD: forall n:nat, open (Wn n) /\ dense (Wn n).   
-move=>n.
-apply conj.
-have inc_conti: continuous (subspace_inc CfH) by apply subspace_inc_continuous.
-rewrite/Wn.
-apply:inc_conti.
-apply:W_is_open.
-red.
-by apply pos_inv_INR_Sn.
+- move=>n; split;
+    first by apply: subspace_inc_continuous; apply: W_is_open; auto with *.
 (********************************************)  
-apply meets_every_nonempty_open_impl_dense.
-move=> U U_open U_Inhabited.
-destruct U_Inhabited as [gPP InUgPP]. 
-have exU: exists V:Ensemble (point_set CMapt), open V /\
-  U = inverse_image (subspace_inc CfH) V.
-apply subspace_topology_topology.
-assumption.
-destruct exU as [V [V_open U_iV]].
-have r_exists: exists r:R, r>0 /\
- Included (open_ball (point_set CMapt) um (proj1_sig gPP) r) V.
-apply open_ball_in_open.
-rewrite U_iV in InUgPP.
-red in InUgPP.
-destruct InUgPP.
-have projg_incg: proj1_sig gPP = subspace_inc CfH gPP by [].
-by rewrite projg_incg.
-assumption. 
-destruct r_exists as [r [r_pos IcOB_V]]. 
-have Exfh0: Inhabited (Intersection fH (open_ball (point_set CMapt) um (proj1_sig gPP) (r*/2))). 
-apply closure_impl_meets_every_open_neighborhood with (proj1_sig gPP).
-destruct  gPP as [gP1 IngCfH].
-simpl.
-by rewrite/CfH. 
-apply open_ball_open.
-fourier.
-simpl.
-constructor.
-have umzero: um (proj1_sig gPP) (proj1_sig gPP) = 0. 
-apply metric_zero.
-by apply um_metric.
-rewrite umzero.
-clear umzero.
-fourier.
-destruct Exfh0 as [fh0 h1_fh0].
-destruct h1_fh0 as [fh0 InfHfh0].
-destruct H as [umgPfh0].  
-destruct InfHfh0 as [h0 [h_h0 h_fh0]].
-destruct h_h0 as [h' h0_conti h'_conti h_h'h0 h_h0h'].
-set eps1:= Rmin (r*/2) (/ INR (S n)).
-have h_delta: exists delta:R, delta > 0 /\
-  forall x1 x2 : X, d x1 x2 < delta -> d (h' x1) (h' x2) < eps1. 
-apply dist_uniform_on_compact.
-assumption.
-have h_Xt: Xt = MetricTopology d d_metric by rewrite/Xt.
-by rewrite<-h_Xt.
-rewrite/eps1.
-red.
-apply Rmin_pos.
-fourier.
-by apply pos_inv_INR_Sn.
-destruct h_delta as [delta [pos_delta h_delta]].
-destruct f_BS with (Rmin delta (r*/2)) as [k [k_homeo [h1_k h2_k]]].
-red.
-apply Rmin_pos.
-by apply pos_delta.
-fourier.
-destruct k_homeo as [k' k_conti k'_conti h_k'k h_kk'].
-set k'h := fun x: point_set Xt => k' (h0 x).
-set h'k := fun x: point_set Xt => h' (k x).  
-set fk'h := fun x: point_set Xt => f (k'h x).
-have k'h_homeo: homeomorphism k'h.
-apply intro_homeomorphism with h'k. 
-rewrite/k'h.
-apply continuous_composition.
-by apply k'_conti.
-by apply h0_conti.
-rewrite/h'k.
-apply continuous_composition.
-by apply h'_conti.
-by apply k_conti.
-move=> x.
-rewrite/h'k /k'h.
-have kk'h0_h0: k (k' (h0 x)) = h0 x by apply h_kk'.
-rewrite kk'h0_h0.
-by apply h_h'h0.
-move=> x.
-rewrite/k'h /h'k.
-have h0h'kx_kx : h0 (h' (k x)) = k x by apply h_h0h'.
-rewrite h0h'kx_kx.
-by apply h_k'k.
-have fk'h_conti: continuous fk'h.
-rewrite/fk'h.
-apply continuous_composition.
-assumption.
-rewrite/k'h.
-apply continuous_composition.
-assumption.
-assumption.
-have fk'h_bdd_conti:
-  bound (Im Full_set (fun x:X => d' (y0 x) (fk'h x))) /\
-  continuous fk'h.
-split.
-apply continuous_bounded.
-assumption.
-assumption.
-set fk'hP:=exist 
-  (fun f: X->Y =>  bound (Im Full_set (fun x:X=> d' (y0 x) (f x)))/\
-                           @continuous Xt Yt f) fk'h fk'h_bdd_conti. 
-have InfHfk'hP: In fH fk'hP.
-red.
-red.
-exists k'h.
-split.
-assumption.
-simpl.
-move=>x.
-by rewrite/fk'h.
-have InCfHfk'hP: In CfH fk'hP.
-have IncfHCfH: Included fH CfH.
-rewrite/CfH.
-by apply closure_inflationary.
-red in IncfHCfH.
-apply IncfHCfH.
-assumption.
-set fk'hPP := exist (fun f0P: (point_set CMapt) => In CfH f0P) fk'hP InCfHfk'hP. 
-exists fk'hPP.
-split.
-red.
-red.
-constructor.
-red.
-red.
-move=>x1 x2 fk'hx1_fk'hx2.
-simpl in fk'hx1_fk'hx2.
-rewrite/fk'h in fk'hx1_fk'hx2.
-have dfhx1_fhx2: d (k (k'h x1)) (k (k'h x2)) < delta.
-apply Rlt_le_trans with (Rmin delta (r */2)).
-by apply h2_k.
-by apply Rmin_l.
-rewrite/k'h in dfhx1_fhx2.
-have kk'h0x1_h0x1: k (k' (h0 x1)) = h0 x1 by apply h_kk'.
-have kk'h0x2_h0x2: k (k' (h0 x2)) = h0 x2 by apply h_kk'.
-rewrite kk'h0x1_h0x1 in dfhx1_fhx2.
-rewrite kk'h0x2_h0x2 in dfhx1_fhx2.
-clear kk'h0x1_h0x1 kk'h0x2_h0x2.
-have dx1x2_eps1: d (h' (h0 x1)) (h' (h0 x2)) < eps1 by apply h_delta.
-have h'hx1_x1: h' (h0 x1) = x1 by apply h_h'h0.
-have h'hx2_x2: h' (h0 x2) = x2 by apply h_h'h0.
-rewrite h'hx1_x1 in dx1x2_eps1.
-rewrite h'hx2_x2 in dx1x2_eps1.
-clear h'hx1_x1 h'hx2_x2.
-apply Rlt_le_trans with eps1.
-by apply dx1x2_eps1.
-rewrite/eps1.
-by apply Rmin_r.
-rewrite U_iV.
-constructor.
-rewrite/fk'hPP.
-simpl.
-suff InOBr: In (open_ball (point_set CMapt) um (proj1_sig gPP) r) fk'hP.
-by apply IcOB_V.
-constructor.
-apply Rle_lt_trans with (um (proj1_sig gPP) fh0 + um fh0 fk'hP).
-apply triangle_inequality.
-by apply um_metric.
-apply Rlt_le_trans with ((r * /2) + um fh0 fk'hP).
-by apply Rplus_lt_compat_r.
-have r_r2: r=r * /2 + r* /2 by field.
-rewrite {2} r_r2; clear r_r2.
-apply Rplus_le_compat_l.
-apply Rle_um_all_d'.
-fourier.
-move=>x.
-rewrite h_fh0.
-simpl.
-rewrite/fk'h.
-rewrite/k'h .
-have kk'h0x_h0x: k (k' (h0 x)) = h0 x by apply h_kk'.
-have fh0x: f (h0 x) = f (k (k' (h0 x))) by  rewrite kk'h0x_h0x.
-rewrite fh0x.
-clear kk'h0x_h0x fh0x.
-rewrite metric_sym.
-apply Rlt_le.
-apply Rlt_le_trans with (Rmin delta (r * /2)).
-by apply h1_k.
-by apply Rmin_r.
-assumption.
-have IWn_dense: dense (IndexedIntersection Wn).
-apply CfHt_baire.
-by apply WnOD.
-
+  apply: meets_every_nonempty_open_impl_dense.
+  move=> U U_open [gPP InUgPP].
+  case: (subspace_topology_topology _ _ U) => // V [V_open U_iV].
+  have [r [r_pos IcOB_V]]: exists r:R, r>0 /\
+    Included (open_ball (point_set CMapt) um (proj1_sig gPP) r) V
+    by apply: open_ball_in_open; move: InUgPP; by rewrite U_iV => -[].
+  have [fh0 h1_fh0]: Inhabited (Intersection fH (open_ball (point_set CMapt) um (proj1_sig gPP) (r*/2))).
+  + apply: (closure_impl_meets_every_open_neighborhood _ _ (proj1_sig gPP)).
+    * by case: (gPP).
+    * by apply: open_ball_open; fourier.
+    * constructor.
+      have ->: um (proj1_sig gPP) (proj1_sig gPP) = 0
+        by apply: metric_zero; apply: um_metric.
+      by fourier.
+  case: h1_fh0 => {fh0} fh0 [h0 [[h' h0_conti h'_conti h_h'h0 h_h0h'] h_fh0]] [umgPfh0].
+  set eps1:= Rmin (r*/2) (/ INR (S n)).
+  have [delta [pos_delta h_delta]]: exists delta:R, delta > 0 /\
+    forall x1 x2 : X, d x1 x2 < delta -> d (h' x1) (h' x2) < eps1.
+  + apply: dist_uniform_on_compact => //.
+    apply: Rmin_pos; by [fourier | auto with *].
+  case: (f_BS (Rmin delta (r*/2))); first by apply: Rmin_pos => //; fourier.
+  move=> k [[k' k_conti k'_conti h_k'k h_kk'] [h1_k h2_k]].
+  set k'h := fun x: point_set Xt => k' (h0 x).
+  set h'k := fun x: point_set Xt => h' (k x).  
+  set fk'h := fun x: point_set Xt => f (k'h x).
+  have k'h_homeo: homeomorphism k'h.
+  + exists h'k.
+    * exact: continuous_composition.
+    * exact: continuous_composition.
+    * by move=> x; rewrite /h'k /k'h h_kk' h_h'h0.
+    * by move=> x; rewrite /k'h /h'k h_h0h' h_k'k.
+  have fk'h_conti: continuous fk'h
+    by apply: continuous_composition => //; exact: continuous_composition.
+  have fk'h_bdd_conti:
+    bound (Im Full_set (fun x:X => d' (y0 x) (fk'h x))) /\
+    continuous fk'h
+  by split=> //; exact: continuous_bounded.
+  set fk'hP := exist 
+        (fun f: X->Y => bound (Im Full_set (fun x:X=> d' (y0 x) (f x)))/\
+                        @continuous Xt Yt f) fk'h fk'h_bdd_conti.
+  have InCfHfk'hP: In CfH fk'hP
+    by apply: closure_inflationary; exists k'h; split.
+  set fk'hPP := exist (fun f0P: point_set CMapt => In CfH f0P) fk'hP InCfHfk'hP. 
+  exists fk'hPP; split.
+  + constructor => x1 x2 fk'hx1_fk'hx2.
+    rewrite /= /fk'h in fk'hx1_fk'hx2.
+    have: d (k (k'h x1)) (k (k'h x2)) < delta
+      by apply: Rlt_le_trans (h2_k _ _ _) (Rmin_l _ _).
+    rewrite /k'h !h_kk' => /h_delta.
+    rewrite !h_h'h0 => /Rlt_le_trans.
+    apply.
+    apply: Rmin_r.
+  + rewrite U_iV.
+    constructor.
+    rewrite /fk'hPP /=.
+    apply: IcOB_V.
+    constructor.
+    apply: Rle_lt_trans (_ : _ <= um (proj1_sig gPP) fh0 + um fh0 fk'hP) _;
+      first by apply: triangle_inequality; by apply: um_metric.
+    apply: Rlt_le_trans (_ : _ < r * /2 + um fh0 fk'hP) _;
+      first by apply: Rplus_lt_compat_r.
+    rewrite [x in _ <= x](_ : r = r * /2 + r* /2); last by field.
+    apply: Rplus_le_compat_l.
+    apply: Rle_um_all_d'; first by fourier.
+    move=> x.
+    rewrite h_fh0 /= /fk'h /k'h -[X in d' (f X)]h_kk' metric_sym //.
+    apply: Rlt_le.
+    exact: Rlt_le_trans (h1_k _) (Rmin_r _ _).
+have IWn_dense: dense (IndexedIntersection Wn)
+  by apply: CfHt_baire; apply: WnOD.
 have InCfHfP: In CfH fP.
-rewrite/CfH.
-by apply closure_inflationary.
-set fPP:= exist (fun gP : CMap => In CfH gP) fP InCfHfP.
-set OBeps := (open_ball CMap um  fP eps). 
-have WnBeps: Inhabited (Intersection (IndexedIntersection Wn) (inverse_image (subspace_inc CfH) OBeps)). 
-apply dense_meets_every_nonempty_open.
-by apply IWn_dense.
-apply subspace_inc_continuous.
-apply open_ball_open.
-apply eps_pos.
-apply Inhabited_intro with fPP.
-constructor.
-simpl.
-rewrite/OBeps.
-constructor.
-rewrite metric_zero.
-by apply eps_pos.
-by apply um_metric.
-destruct WnBeps as [hPP H_h].
-destruct H_h as [hPP Wn_h OB_h].
+  by apply: closure_inflationary.
+set fPP := exist (fun gP : CMap => In CfH gP) fP InCfHfP.
+set OBeps := (open_ball CMap um fP eps). 
+have [hPP H_h]: Inhabited (Intersection (IndexedIntersection Wn) (inverse_image (subspace_inc CfH) OBeps)).
+- apply: dense_meets_every_nonempty_open.
+  + exact: IWn_dense.
+  + apply: subspace_inc_continuous.
+    exact: open_ball_open.
+  + exists fPP.
+    constructor.
+    constructor.
+    rewrite metric_zero //.
+    exact: um_metric.
+case: H_h => {hPP} _ [hPP Wn_h] [OB_h].
 (***)
-set hP:= proj1_sig hPP.
-set h:= proj1_sig hP.
-set H_h := proj2_sig hP.
-simpl in H_h.
-destruct H_h as [b_h c_h].
-clear b_h.
-rewrite-/h in c_h.
-destruct Wn_h as [hPP Wn_h].
-destruct OB_h as [OB_h].
-rewrite/subspace_inc in OB_h.
-rewrite-/hP in OB_h.
-destruct OB_h as [umfh].
+set hP := proj1_sig hPP.
+set h := proj1_sig hP.
+case: (proj2_sig hP) => _.
+rewrite -/h => c_h.
+move: OB_h.
+rewrite /subspace_inc -/hP => -[umfh].
 exists h.
 split.
-apply bij_conti_is_homeo_for_compact_Hausdorff_spaces.
-by apply X_compact.
-by apply Y_compact.
-by apply MetricTopology_Hausdorff.
-by apply MetricTopology_Hausdorff .
-constructor.
-red.
-move=> x1 x2 hx1_hx2.
-apply metric_strict with d.
-by apply d_metric.
-apply NNPP.
-move=> dx1x2n. 
-apply Rdichotomy in dx1x2n.
-destruct dx1x2n.
-have dx1dx2nn: d x1 x2 >= 0.
-apply metric_nonneg.
-by apply d_metric.
-move:H.
-by apply Rge_not_lt.
-have x1x2_n: exists n:nat, (n > 0)%nat /\ / (INR n) < d x1 x2.
-apply inverses_of_nats_approach_0.
-by apply H.
-destruct x1x2_n as [n [n_pos x1x2_n]].
-destruct Wn_h with n as [h_Wn].
-rewrite/W in h_Wn.
-red in h_Wn.
-have sihPP_hP: subspace_inc CfH hPP = hP by rewrite/subspace_inc.
-rewrite sihPP_hP in h_Wn.
-rewrite-/h in h_Wn.
-have dx1x2: d x1 x2 < / INR n.
-apply Rlt_trans with (/ INR (S n)).
-apply h_Wn.
-by apply hx1_hx2.
-apply Rinv_lt_contravar.
-apply Rmult_lt_0_compat.
-apply lt_0_INR.
-by apply n_pos.
-by apply pos_INR_Sn.
-apply lt_INR.
-by apply lt_n_Sn.
-have dx1x2nn: d x1 x2 <= / INR n by apply Rlt_le.
-move: dx1x2nn.
-by apply Rgt_not_le.
-red. 
-apply NNPP.
-move=>Nay.
-apply not_all_ex_not in Nay.
-destruct Nay as [y h_nx].
-have InCImhy: In (Complement (Im Full_set h)) y.
-rewrite/Complement.
-red.
-move=> InImhy.
-destruct InImhy as [x InXx y_hx].
-destruct h_nx.
-by exists x.
-have CImh_open: 
-  open (@Complement (point_set Yt) (@Im (point_set Xt) _  Full_set h)).
-apply closed_complement_open.
-rewrite Complement_Complement.
-apply compact_closed.
-apply MetricTopology_Hausdorff.
-have h_img: forall x:point_set Xt, In (Im Full_set h) (h x).
-move=>x.
-by apply Im_intro with x.
-set hf:= @continuous_factorization Xt Yt h (Im Full_set h) h_img.
-apply compact_image with hf.
-by apply X_compact.
-by apply factorization_is_continuous.
-red.
-move=>y1P.  
-destruct y1P as [y1 InImh_y1].
-destruct InImh_y1  as [x1 InF_x y1 y1_hx1].
-exists x1.
-rewrite/hf.
-rewrite/continuous_factorization.
-pose proof (y1_hx1).
-symmetry in H.
-destruct H.
-f_equal.
-apply proof_irrelevance.
+apply: bij_conti_is_homeo_for_compact_Hausdorff_spaces => //.
+- exact: MetricTopology_Hausdorff.
+- exact: MetricTopology_Hausdorff.
+- split.
+  + move=> x1 x2 hx1_hx2.
+    apply: (metric_strict _ d) => //.
+    apply: Rle_antisym; last by apply: Rge_le; apply: metric_nonneg.
+    apply: Rnot_gt_le => H.
+    case: (inverses_of_nats_approach_0 (d x1 x2)) => // n [n_pos].
+    apply: Rle_not_gt.
+    case: (Wn_h n).
+    rewrite /W /In /subspace_inc -/hP -/h => h_Wn.
+    apply: Rlt_le.
+    apply: Rlt_trans (_ : _ < / INR (S n)) _; first by apply: h_Wn.
+    apply: Rinv_lt_contravar.
+    apply: Rmult_lt_0_compat; auto with *.
+    exact: lt_INR.
+  + move=> y.
+    apply: NNPP => h_nx.
+    have InCImhy: In (Complement (Im Full_set h)) y.
+    * case E: _ / => [x InXx y' y_hx].
+      apply: h_nx.
+      exists x.
+      by rewrite E y_hx.
+    have CImh_open: open (@Complement (point_set Yt) (Im Full_set h)).
+    * apply: closed_complement_open.
+      rewrite Complement_Complement.
+      apply: compact_closed; first by apply: MetricTopology_Hausdorff.
+      have h_img: forall x:point_set Xt, In (Im Full_set h) (h x)
+        by move=>x; exists x.
+      set hf:= @continuous_factorization Xt Yt h (Im Full_set h) h_img.
+      apply: (compact_image hf) => //;
+        first by apply: factorization_is_continuous.
+      case=> _ [x1 InF_x y1 y1_hx1].
+      exists x1.
+      exact: subset_eq_compatT.
 (*******************************) 
-have y_r: exists r:R, r > 0 /\
-  Included (open_ball (point_set Yt) d' y r) (Complement (Im Full_set h)).
-apply open_ball_in_open.
-by apply InCImhy.
-by apply CImh_open.
-destruct y_r as [r [r_pos IncObCImh]]. 
-have fH_hP_r: Inhabited (
-  Intersection fH (open_ball (point_set CMapt) um hP r)).  
-apply closure_impl_meets_every_open_neighborhood with hP.
-destruct hPP as [hP' InCfH_hP'].
-simpl in hP.
-rewrite/hP.
-by rewrite/CfH.
-apply open_ball_open.
-by apply r_pos.
-constructor.
-rewrite metric_zero.
-by red in r_pos.
-by apply um_metric.
-destruct fH_hP_r as [fh1 H].
-destruct H as [fh1 InfHfh1 umhPfh1_r].
-destruct umhPfh1_r as [umhPfh1_r].
-destruct InfHfh1 as [h1 [h1_homeo fh1_f_h1]]. 
-have Ex1:exists x1:point_set Xt, y = f (h1 x1).
-destruct h1_homeo as [h1' h1_cont h1'_cont h1'h1 h1h1'].
-destruct f_surj with y as [x2 fx2_y].
-exists (h1' x2).
-have h1h1'x2: h1 (h1' x2) = x2 by apply h1h1'.
-by rewrite h1h1'x2; clear h1h1'x2.
-destruct Ex1 as [x1 y_fh1x1].
-have InObyr_hx1: In (open_ball (point_set Yt) d' y r) (h x1).
-constructor.
-rewrite y_fh1x1.
-rewrite/h.
-have fh1_pr: proj1_sig fh1 x1 = f (h1 x1) by apply fh1_f_h1.
-rewrite-fh1_pr.
-rewrite metric_sym.
-apply Rle_lt_trans with (um hP fh1).
-by apply Rle_d'_um.
-by apply umhPfh1_r.
-by apply d'_metric.
-have InCImh_hx1: In (Complement (Im Full_set h)) (h x1).
-by apply IncObCImh.
-destruct InCImh_hx1.
-by apply Im_intro with x1.
-by apply c_h.
-move=>x.
-have f_fP: f = proj1_sig fP by rewrite/fP.
-rewrite f_fP /h.
-apply Rle_lt_trans with (um fP hP).
-by apply Rle_d'_um.
-exact.
+    have [r [r_pos IncObCImh]]: exists r:R, r > 0 /\
+      Included (open_ball (point_set Yt) d' y r) (Complement (Im Full_set h))
+      by apply: open_ball_in_open.
+    have fH_hP_r: Inhabited (
+                    Intersection fH (open_ball (point_set CMapt) um hP r)).
+    * { apply: (closure_impl_meets_every_open_neighborhood _ _ hP).
+        - rewrite /hP. 
+          by case: (proj2_sig hPP). 
+        - exact: open_ball_open.
+        - constructor.
+          rewrite metric_zero //.
+          by apply: um_metric.
+      }
+    case: fH_hP_r => _ [fh1 [h1 [h1_homeo fh1_f_h1]] [umhPfh1_r]].
+    have [x1 y_fh1x1]: exists x1:point_set Xt, y = f (h1 x1).
+    * case: h1_homeo => h1' h1_cont h1'_cont h1'h1 h1h1'.
+      case: (f_surj y) => x2 fx2_y.
+      exists (h1' x2).
+      by rewrite h1h1'.
+    have InObyr_hx1: In (open_ball (point_set Yt) d' y r) (h x1).
+    * constructor.
+      rewrite /h y_fh1x1 -fh1_f_h1 metric_sym //.
+      apply: Rle_lt_trans _ umhPfh1_r.
+      exact: Rle_d'_um.
+    have: In (Complement (Im Full_set h)) (h x1)
+      by apply: IncObCImh.
+    apply.
+    by exists x1.
+- move=> x.
+  rewrite -[f]/(proj1_sig fP) /h.
+  apply: Rle_lt_trans _ umfh.
+  exact: Rle_d'_um.
 Qed. (*  Bing_Shrinking_Theorem *)
 
 End BingShrinkingTheorem.
