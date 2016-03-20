@@ -53,21 +53,25 @@ Open Scope R_scope.
 Section Topological_Lemmas.
 (*** Some frequently used inequqlities ***)
 
+(*
+(* This can be proved with "auto with *". *)
 Lemma pos_INR_Sn: forall n:nat, 0 < INR (S n).
 Proof.
 by move=> n; apply: lt_0_INR; apply: lt_0_Sn.
 Qed.
 
+(* This can be proved with "auto with *". *)
 Lemma pos_inv_INR_Sn: forall n:nat, 0 < /INR (S n).
 Proof.
 by move=> n0; apply: Rinv_0_lt_compat; apply: pos_INR_Sn.
 Qed.
+*)
 
 Lemma Rlt_inv_INR_S_contravar:
 forall n m:nat, (n < m)%nat -> /INR (S m) < /INR (S n).
 Proof.
 move=> n m nltm.
-apply: Rinv_lt_contravar; first by apply: Rmult_lt_0_compat; apply: pos_INR_Sn.
+apply: Rinv_lt_contravar; first by apply: Rmult_lt_0_compat; auto with *.
 by apply: lt_INR; apply: lt_n_S.
 Qed.
 
@@ -75,7 +79,7 @@ Lemma Rle_inv_INR_S_contravar:
 forall n m:nat, (n <= m)%nat -> /INR (S m) <= /INR (S n).
 Proof.
 move=> n m nlem.
-apply: Rinv_le_contravar; first by apply: pos_INR_Sn.
+apply: Rinv_le_contravar; first by auto with *.
 by apply: le_INR; apply: le_n_S.
 Qed.
 
