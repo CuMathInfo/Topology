@@ -1,8 +1,8 @@
 (** *** The Baire Category Theorem for complete metric spaces  by  Ken'ichi Kuga ****)
-(** Simplified using SSReflect by Mitsuharu Yamamoto **) 
+(** Simplified using SSReflect by Mitsuharu Yamamoto **)
 (** ***************************************************************
 
-Theorem BaireCategoryTheorem :  complete d d_metric -> baire_space. 
+Theorem BaireCategoryTheorem :  complete d d_metric -> baire_space.
 
 ******************************************************************)
 Require Import ClassicalChoice.
@@ -32,8 +32,8 @@ Qed.
 (* Definition of Baire Spaces *)
 Definition baire_space : Prop :=
   forall V : IndexedFamily nat (point_set X),
-    (forall n: nat, (open (V n)) /\ (dense (V n))) -> 
-       dense (IndexedIntersection V). 
+    (forall n: nat, (open (V n)) /\ (dense (V n))) ->
+       dense (IndexedIntersection V).
 
 (* Introducing metric metrizing X *)
 Variable d : (point_set X) -> (point_set X) -> R.
@@ -47,13 +47,13 @@ Lemma ln_mult_pow : forall a:R, a > 0 ->
 Proof.
 move=>a a_pos.
 induction k.
-simpl. 
+simpl.
 rewrite Rmult_0_l.
 rewrite ln_1.
 reflexivity.
 have H: S k = (k + 1)%nat by auto with *.
 rewrite H; clear H.
-have H1: INR (k + 1)%nat = (INR k ) + 1 by apply plus_INR. 
+have H1: INR (k + 1)%nat = (INR k ) + 1 by apply plus_INR.
 rewrite H1; clear H1.
 have H2: (INR k + 1) * ln a = (INR k) * ln a + 1 * ln a.
 apply Rmult_plus_distr_r.
@@ -78,7 +78,7 @@ Qed.
 Lemma Req_move_pr2ml: forall r1 r2 r : R, r1 = r2 + r -> r1 - r = r2.
 Proof.
 move=> r1 r2 r ->.
-by rewrite /Rminus Rplus_assoc Rplus_opp_r Rplus_0_r. 
+by rewrite /Rminus Rplus_assoc Rplus_opp_r Rplus_0_r.
 Qed.
 
 Lemma Req_move_pl2mr: forall r1 r2 r : R, r1 + r = r2 -> r1 = r2 - r.
@@ -89,7 +89,7 @@ Qed.
 Lemma Req_move_mr2pl: forall r1 r2 r : R, r1 = r2 - r -> r1 + r = r2.
 Proof.
 move=> r1 r2 r ->.
-by rewrite /Rminus Rplus_assoc Rplus_opp_l Rplus_0_r. 
+by rewrite /Rminus Rplus_assoc Rplus_opp_l Rplus_0_r.
 Qed.
 
 Lemma Req_move_ml2pr: forall r1 r2 r : R, r1 - r = r2 -> r1 = r2 + r.
@@ -113,14 +113,14 @@ Qed.
 
 Lemma Rle_move_mr2pl: forall r1 r2 r : R, r1 <= r2 - r -> r1 + r <= r2.
 Proof.
-move=> r1 r2 r lhs. 
+move=> r1 r2 r lhs.
 rewrite /Rminus (_ : r2 = r2 + -r + r); first auto with real.
 by rewrite Rplus_assoc Rplus_opp_l Rplus_0_r.
 Qed.
 
 Lemma Rle_move_ml2pr: forall r1 r2 r : R, r1 - r <= r2 -> r1 <= r2 + r.
 Proof.
-move=> r1 r2 r lhs. 
+move=> r1 r2 r lhs.
 rewrite /Rminus (_ : r1 = r1 + -r + r); first auto with real.
 by rewrite Rplus_assoc Rplus_opp_l Rplus_0_r.
 Qed.
@@ -141,14 +141,14 @@ Qed.
 
 Lemma Rlt_move_mr2pl: forall r1 r2 r : R, r1 < r2 - r -> r1 + r < r2.
 Proof.
-move=> r1 r2 r lhs. 
+move=> r1 r2 r lhs.
 rewrite /Rminus (_ : r2 = r2 + -r + r); first auto with real.
 by rewrite Rplus_assoc Rplus_opp_l Rplus_0_r.
 Qed.
 
 Lemma Rlt_move_ml2pr: forall r1 r2 r : R, r1 - r < r2 -> r1 < r2 + r.
 Proof.
-move=> r1 r2 r lhs. 
+move=> r1 r2 r lhs.
 rewrite /Rminus (_ : r1 = r1 + -r + r); first auto with real.
 by rewrite Rplus_assoc Rplus_opp_l Rplus_0_r.
 Qed.
@@ -190,7 +190,7 @@ Qed.
 
 Lemma Rgt_move_ml2pr: forall r1 r2 r : R, r1 - r > r2 -> r1 > r2 + r.
 Proof.
-by move=> r1 r2 r /Rlt_move_mr2pl. 
+by move=> r1 r2 r /Rlt_move_mr2pl.
 Qed.
 
 Lemma Rle_pow_inv2_1: forall n:nat, (/2)^n <= 1.
@@ -231,7 +231,7 @@ Qed.
 
 (*************************************************)
 Lemma open_ball_is_open:
-  forall (x: point_set X) (r: R), 
+  forall (x: point_set X) (r: R),
     r > 0 -> open (open_ball (point_set X) d x r).
 Proof.
 move=> x r H_r_pos.
@@ -246,9 +246,9 @@ Qed.
 
 Lemma open_ball_in_open_set:
   forall (x : point_set X) (U : Ensemble (point_set X)),
-    open U -> In U x  -> 
-    exists r : R, r > 0 /\ 
-      Included (open_ball (point_set X) d x r) U. 
+    open U -> In U x  ->
+    exists r : R, r > 0 /\
+      Included (open_ball (point_set X) d x r) U.
 Proof.
 move=> x U open_U In_U_x.
 have [oball [[r H_rpos] HbInU]]:
@@ -265,11 +265,11 @@ Definition closed_ball (x0 : point_set X) (r : R):
      fun (x : point_set X)  => d x0 x <= r.
 
 Lemma closed_ball_is_closed :
-  forall (x0: point_set X) (r: R), closed (closed_ball x0 r). 
-Proof. 
+  forall (x0: point_set X) (r: R), closed (closed_ball x0 r).
+Proof.
 move=> x0 r0; rewrite /closed.
 set cover := fun (xd: { x: point_set X | d x0 x > r0 }%type) =>
-  open_ball (point_set X) d (proj1_sig xd) (d x0 (proj1_sig xd) - r0).  
+  open_ball (point_set X) d (proj1_sig xd) (d x0 (proj1_sig xd) - r0).
 suff ->: Complement (closed_ball x0 r0) = IndexedUnion cover.
 { apply: open_indexed_union => xd.
   apply: open_ball_is_open.
@@ -294,20 +294,20 @@ Qed.
 (* The Baire Category Theorem for complete metric spaces *)
 
 Theorem BaireCategoryTheorem :  complete d d_metric -> baire_space.
- 
+
 Proof.
 
 move=> H_cplt V H_od.
 apply: Extensionality_Ensembles; split => // x H.
 apply: meets_every_open_neighborhood_impl_closure => U H_opn_U H_In_U_x.
-set (IStep (xrn0 xrn1: point_set X * { r:R | r > 0} * nat) := 
-  snd xrn1 = S (snd xrn0) /\ 
+set (IStep (xrn0 xrn1: point_set X * { r:R | r > 0} * nat) :=
+  snd xrn1 = S (snd xrn0) /\
   proj1_sig (snd (fst xrn1)) <= (proj1_sig (snd (fst xrn0))) * /2 /\
   d (fst (fst xrn0)) (fst (fst xrn1)) < (proj1_sig (snd (fst xrn0))) * /2 /\
-  Included 
+  Included
     (open_ball _ d (fst (fst xrn1)) (2*proj1_sig (snd (fst xrn1))))
     (V (snd xrn1))).
-(* step 0 *) 
+(* step 0 *)
 have [x0] : Inhabited (Intersection (V 0%nat) U).
   by apply: dense_meets_every_nonempty_open => //;
      [case: (H_od 0%nat) | exists x].
@@ -329,7 +329,7 @@ have [Fn [H_0 H_n]]: exists Fn : nat -> point_set X * { r:R | r>0 } * nat,
   set rn := proj1_sig (snd (fst xrn)).
   set rn_pos := proj2_sig (snd (fst xrn)).
   set nn := snd xrn.
-  have [yn] : Inhabited (Intersection (V (S nn)) (open_ball (point_set X) d xn (rn * /2))).  
+  have [yn] : Inhabited (Intersection (V (S nn)) (open_ball (point_set X) d xn (rn * /2))).
   { apply: dense_meets_every_nonempty_open.
     - by case: (H_od (S nn)).
     - apply: open_ball_is_open.
@@ -376,7 +376,7 @@ have r_n_0 : r_n 0%nat = r0
 have r_n_pos : forall n : nat, r_n n > 0
   by move => n; apply: proj2_sig.
 have r_n_r_Sn : forall n : nat, r_n (S n) <= (r_n n) * /2.
-  by move=> n; case: (H_n n) => ? []. 
+  by move=> n; case: (H_n n) => ? [].
 have r_n_r_ni : forall n i : nat, r_n (n+i)%nat <= r_n n * (/2)^i.
 { move=> n.
   elim=> [| i IHi] /=; first by rewrite -plus_n_O Rmult_1_r; apply: Rle_refl.
@@ -389,7 +389,7 @@ have r_n_r_ni : forall n i : nat, r_n (n+i)%nat <= r_n n * (/2)^i.
 }
 have x_n_x_Sn_r_n : forall n : nat, d (x_n n) (x_n (S n)) < (r_n n) * /2
   by move=> n; case: (H_n n) => ? [? []].
-have x_ni_x_nSi_r_n : forall n i : nat, 
+have x_ni_x_nSi_r_n : forall n i : nat,
   d (x_n (n+i)%nat) (x_n (n + (S i))%nat) < (r_n n)* /2 * (/2)^i.
 { move=> n i.
   rewrite -plus_n_Sm.
@@ -398,8 +398,8 @@ have x_ni_x_nSi_r_n : forall n i : nat,
   apply: Rmult_le_compat_r => //.
   by auto with real.
 }
-have x_n_x_nk: forall n : nat, 
-  forall k : nat, d (x_n n%nat) (x_n (n+k)%nat) <= r_n n * (1 - (/2)^k). 
+have x_n_x_nk: forall n : nat,
+  forall k : nat, d (x_n n%nat) (x_n (n+k)%nat) <= r_n n * (1 - (/2)^k).
 { move=> n.
   elim=> [| k IHk] /=.
   - rewrite -plus_n_O metric_zero // /Rminus Rplus_opp_r Rmult_0_r.
@@ -412,10 +412,10 @@ have x_n_x_nk: forall n : nat,
     apply: Rlt_le.
     exact: Rplus_le_lt_compat => //.
 }
-have HCauchy: cauchy d x_n. 
+have HCauchy: cauchy d x_n.
 { move=> eps eps_pos.
   have [N HN]: exists N:nat, forall n:nat,
-        (n >=N)%nat -> (/2)^n <= (/r0) * (/2) * eps.  
+        (n >=N)%nat -> (/2)^n <= (/r0) * (/2) * eps.
   { apply: pow_inv_2_n_approach_0.
     by do !apply: Rmult_gt_0_compat => //; apply: Rinv_0_lt_compat; auto with real.
   }
@@ -471,7 +471,7 @@ case: (Lim D).
 - constructor.
   by rewrite metric_zero.
 - rewrite /= => x1 H0.
-  have nn_Vnn: forall n:nat, 
+  have nn_Vnn: forall n:nat,
       snd (Fn n) = n /\ Included (open_ball (point_set X) d (x_n n) (2*(r_n n))) (V n).
   { elim=> [| n [Hn_n _]].
     - rewrite H_0 x_n_0 r_n_0; split => //.
@@ -508,7 +508,7 @@ case: (Lim D).
       }
       set k1:= (n1 - n)%nat.
       have le_0_k1: le 0%nat k1.
-      { rewrite (_: (0 = n - n)%nat); last by auto with *. 
+      { rewrite (_: (0 = n - n)%nat); last by auto with *.
         apply: minus_le_compat_r.
         by apply: Max.le_max_r.
       }
