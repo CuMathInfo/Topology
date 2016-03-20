@@ -641,53 +641,51 @@ have frab: (proj1_sig fr lim_a) = (proj1_sig fr lim_b).
     apply: Rmult_lt_0_compat; auto with *.
     exact: lt_INR.
   }
-  have: d' (proj1_sig fr lim_a) (proj1_sig fr lim_b) <
-        /4*eps + /4*eps + /4*eps + /4*eps.
-  { apply: Rle_lt_trans
-             (_ : d' (proj1_sig fr lim_a) (proj1_sig fr (bN N))
-                  + d' (proj1_sig fr (bN N)) (proj1_sig fr lim_b) < _);
-      first by apply: triangle_inequality.
-    apply: Rplus_lt_compat; last first.
-    - rewrite metric_sym //.
-      apply: fr_conti_b.
-      apply: Rlt_le_trans (_ : del <= _); last by apply: Rmin_r.
-      apply: Rlt_le_trans (_ : Rmin (/4*eps) del <= _ ); last by apply: Rmin_r.
-      apply: Rlt_trans (_ : / INR N < _) => //.
-      exact: Rlt_trans (_ : / INR (S N) < _).
-    apply: Rle_lt_trans
-             (_ : d' (proj1_sig fr lim_a) (proj1_sig (gN N) (bN N)) + 
-                  d' (proj1_sig (gN N) (bN N)) (proj1_sig fr (bN N)) < _);
-      first by apply: triangle_inequality.
-    apply: Rplus_lt_compat; last first.
-    - rewrite metric_sym //.
-      apply: Rle_lt_trans (_ : um fr (gN N) < _); first by apply: Rle_d'_um.
-      apply: Rlt_trans (_ : / INR (S N) < _) => //.
-      apply: Rlt_trans (_ : / INR N < _) => //.
-      apply: Rlt_le_trans (_ : Rmin (/ 4 * eps) del <= _) => //.
-      exact: Rmin_l.
-    apply: Rle_lt_trans
-             (_ : d' (proj1_sig fr lim_a) (proj1_sig (gN N) (aN N)) +
-                  d' (proj1_sig (gN N) (aN N)) (proj1_sig (gN N) (bN N)) < _);
-      first by apply: triangle_inequality.
-    rewrite gNaN_cN gNbN_cN metric_zero // Rplus_0_r.
-    apply: Rle_lt_trans (_ : d' (proj1_sig fr lim_a) (proj1_sig fr (aN N)) +
-                             d' (proj1_sig fr (aN N)) (cN N) < _);
-      first by apply: triangle_inequality.
-    apply: Rplus_lt_compat.
-    - apply: fr_conti_a.
-      apply: Rlt_le_trans (_ : del <= _); last by apply: Rmin_l.
-      apply: Rlt_le_trans (_ : Rmin (/4*eps) del <= _ ); last by apply: Rmin_r.
-      apply: Rlt_trans (_ : / INR N < _) => //.
-      exact: Rlt_trans (_ : / INR (S N) < _).
-    - rewrite -gNaN_cN.
-      apply: Rle_lt_trans (_ : um fr (gN N) < _); first by apply: Rle_d'_um.
-      apply: Rlt_trans (_ : / INR (S N) < _) => //.
-      apply: Rlt_trans (_ : / INR N < _) => //.
-      apply: Rlt_le_trans (_ : Rmin (/ 4 * eps) del <= _) => //.
-      exact: Rmin_l.
-  }
-  rewrite [x in _ < x](_ : _ = eps); last by field.
-  exact: Rlt_irrefl.
+  suff: d' (proj1_sig fr lim_a) (proj1_sig fr lim_b) < eps
+    by apply: Rlt_irrefl.
+  rewrite (_ : eps = /4*eps + /4*eps + /4*eps + /4*eps); last by field.
+  apply: Rle_lt_trans
+           (_ : d' (proj1_sig fr lim_a) (proj1_sig fr (bN N))
+                + d' (proj1_sig fr (bN N)) (proj1_sig fr lim_b) < _);
+    first by apply: triangle_inequality.
+  apply: Rplus_lt_compat; last first.
+  - rewrite metric_sym //.
+    apply: fr_conti_b.
+    apply: Rlt_le_trans (_ : del <= _); last by apply: Rmin_r.
+    apply: Rlt_le_trans (_ : Rmin (/4*eps) del <= _ ); last by apply: Rmin_r.
+    apply: Rlt_trans (_ : / INR N < _) => //.
+    exact: Rlt_trans (_ : / INR (S N) < _).
+  apply: Rle_lt_trans
+           (_ : d' (proj1_sig fr lim_a) (proj1_sig (gN N) (bN N)) + 
+                d' (proj1_sig (gN N) (bN N)) (proj1_sig fr (bN N)) < _);
+    first by apply: triangle_inequality.
+  apply: Rplus_lt_compat; last first.
+  - rewrite metric_sym //.
+    apply: Rle_lt_trans (_ : um fr (gN N) < _); first by apply: Rle_d'_um.
+    apply: Rlt_trans (_ : / INR (S N) < _) => //.
+    apply: Rlt_trans (_ : / INR N < _) => //.
+    apply: Rlt_le_trans (_ : Rmin (/ 4 * eps) del <= _) => //.
+    exact: Rmin_l.
+  apply: Rle_lt_trans
+           (_ : d' (proj1_sig fr lim_a) (proj1_sig (gN N) (aN N)) +
+                d' (proj1_sig (gN N) (aN N)) (proj1_sig (gN N) (bN N)) < _);
+    first by apply: triangle_inequality.
+  rewrite gNaN_cN gNbN_cN metric_zero // Rplus_0_r.
+  apply: Rle_lt_trans (_ : d' (proj1_sig fr lim_a) (proj1_sig fr (aN N)) +
+                           d' (proj1_sig fr (aN N)) (cN N) < _);
+    first by apply: triangle_inequality.
+  apply: Rplus_lt_compat.
+  - apply: fr_conti_a.
+    apply: Rlt_le_trans (_ : del <= _); last by apply: Rmin_l.
+    apply: Rlt_le_trans (_ : Rmin (/4*eps) del <= _ ); last by apply: Rmin_r.
+    apply: Rlt_trans (_ : / INR N < _) => //.
+    exact: Rlt_trans (_ : / INR (S N) < _).
+  - rewrite -gNaN_cN.
+    apply: Rle_lt_trans (_ : um fr (gN N) < _); first by apply: Rle_d'_um.
+    apply: Rlt_trans (_ : / INR (S N) < _) => //.
+    apply: Rlt_trans (_ : / INR N < _) => //.
+    apply: Rlt_le_trans (_ : Rmin (/ 4 * eps) del <= _) => //.
+    exact: Rmin_l.
 }
 have dlimalimb_r: d lim_a lim_b < r
   by apply: fr_in_W.
