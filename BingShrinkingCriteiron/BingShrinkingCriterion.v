@@ -383,10 +383,10 @@ have Cf0: @continuous Xt Yt f0.
     }
     case: (proj2_sig (fn N)) => _.
     move/continuous_func_continuous_everywhere/(_ x).
-    move/(metric_space_fun_continuity_converse Xt Yt _ _ d d').
-    move/(_ (MetricTopology_metrizable _ _ _)).
-    move/(_ (MetricTopology_metrizable _ _ _)).
-    case/(_ (/2 * eps)); first by fourier.
+    move/metric_space_fun_continuity_converse.
+    case/(_ d d')/(_ _ _ (/2 * eps));
+      [exact: MetricTopology_metrizable | exact: MetricTopology_metrizable |
+       by fourier |].
     move=> delta [delta_pos HC].
     exists delta; split => // x' dxx'_le_delta.
     rewrite [x in _ < x](_ : eps = /4*eps + /2*eps + /4*eps); last by field.
