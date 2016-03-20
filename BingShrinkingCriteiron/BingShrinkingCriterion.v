@@ -295,19 +295,20 @@ Proof.
 move=> cpl_d' fn cauchy_fn.
 pose yn (x:X): Net nat_DS Yt:= fun n:nat => (proj1_sig (fn n%nat)) x.
 have cauchy_yn: forall x:X, cauchy d' (yn x).
-- move=> x eps pos_eps.
+{ move=> x eps pos_eps.
   case: (cauchy_fn _ pos_eps) => [N cau_fn].
   exists N.
   move=> m n hm hn.
   apply: Rle_lt_trans (_ : um (fn m) (fn n) < _); first by apply: Rle_d'_um.
   by apply: cau_fn.
+}
 pose choice_R (x:X) (y:Y): Prop := net_limit (yn x) y. 
 have choice_f0: forall x:X, exists y:Y, (choice_R x y)
   by move=> x; apply: cpl_d'; apply: cauchy_yn.
 have [f0 Hf0]: exists f0: X->Y, 
   (forall x:X, choice_R x (f0 x)) by apply: choice. 
 have Bf0: bound (Im Full_set (fun x:X=> d' (y0 x) (f0 x))).
-- case: (cauchy_fn 1); first by apply: Rlt_0_1.
+{ case: (cauchy_fn 1); first by apply: Rlt_0_1.
   move=> n0 Bd1.
   case: (proj2_sig (fn n0)) => [[ub Bfn0] _].
   exists (ub+1) => _ [x _ _ ->].
@@ -315,22 +316,23 @@ have Bf0: bound (Im Full_set (fun x:X=> d' (y0 x) (f0 x))).
                         + d' (proj1_sig (fn n0) x) (f0 x) <= _);
     first by apply: triangle_inequality.
   apply: Rplus_le_compat.
-  + apply: (Bfn0 (d' (y0 x) (proj1_sig (fn n0) x))).
+  - apply: (Bfn0 (d' (y0 x) (proj1_sig (fn n0) x))).
     by exists x.
-  + have d'um1: forall n:nat, (n >= n0)%nat ->
+  - have d'um1: forall n:nat, (n >= n0)%nat ->
       d' (proj1_sig (fn n0) x) (proj1_sig (fn n) x) < 1.
-    * move=> n hn.
+    { move=> n hn.
       apply: Rle_lt_trans (_ : um (fn n0) (fn n) < _);
         first by apply: Rle_d'_um.
       by apply: Bd1.
+    }
     apply: Rnot_lt_le => Fh.
     set ep := d' (proj1_sig (fn n0) x) (f0 x) - 1.
     have hpos_ep: ep > 0 by apply: Rgt_minus.
     case: (Hf0 x (open_ball Y d' (f0 x) ep)).
-    * exact: open_ball_open.
-    * constructor.
+    + exact: open_ball_open.
+    + constructor.
       by rewrite metric_zero.
-    * rewrite /= => x0 H1.
+    + rewrite /= => x0 H1.
       set m0 := max n0 x0.
       case: (H1 m0); first by apply: Max.le_max_r.
       have H3: d' (proj1_sig (fn n0) x) (yn x m0) < 1
@@ -344,17 +346,18 @@ have Bf0: bound (Im Full_set (fun x:X=> d' (y0 x) (f0 x))).
       apply: Rlt_le.
       rewrite Rplus_comm.
       exact: Rplus_lt_compat_l.
+}
 have Cf0: @continuous Xt Yt f0.
-- apply: pointwise_continuity => /= x.
+{ apply: pointwise_continuity => /= x.
   apply: (metric_space_fun_continuity Xt Yt _ _ d d').
-  + exact: MetricTopology_metrizable.
-  + exact: MetricTopology_metrizable.
-  + move=> eps eps_pos /=.
+  - exact: MetricTopology_metrizable.
+  - exact: MetricTopology_metrizable.
+  - move=> eps eps_pos /=.
     case: (cauchy_fn (/4 * eps)); first by fourier.
     move=> N H.
     have f0fN: forall x:X, 
       d' (f0 x) (proj1_sig (fn N) x) <= /4 * eps.
-    * move=> x0.
+    { move=> x0.
       apply: Rnot_gt_le => H0.
       set de := d' (f0 x0) (proj1_sig (fn N) x0) - /4 * eps.
       have de_pos: de > 0 by apply: Rgt_minus.
@@ -377,6 +380,7 @@ have Cf0: @continuous Xt Yt f0.
         apply: Rge_not_lt.
         rewrite /de /yn.
         by fourier.
+    }
     case: (proj2_sig (fn N)) => _.
     move/continuous_func_continuous_everywhere/(_ x).
     move/(metric_space_fun_continuity_converse Xt Yt _ _ d d').
@@ -397,6 +401,7 @@ have Cf0: @continuous Xt Yt f0.
       first by apply: triangle_inequality.
     apply: Rplus_le_lt_compat => //.
     by apply: HC.
+}
 exists (exist (fun g:X->Y => bound (Im Full_set
               (fun x:X=> d' (y0 x) (g x))) /\
               @continuous Xt Yt g) f0 (conj Bf0 Cf0)).
@@ -437,41 +442,42 @@ set g: point_set Yt -> point_set RTop :=
 set ft: point_set Xt -> point_set RTop := 
                                   fun x => g((f x)).
 have ft_conti: continuous ft.
-- apply: continuous_composition => //.
+{ apply: continuous_composition => //.
   apply: pointwise_continuity => y.
   apply: (metric_space_fun_continuity Yt RTop _ _ d' R_metric).
-  apply: MetricTopology_metrizable.
-  by apply: RTop_metrization.
-move=> eps eps_pos.
-exists eps; split => //.
-- move=> y' d'yy'_eps.
-  rewrite /R_metric /g.
-  apply: Rabs_def1. 
-  + apply: Rlt_move_pr2ml.
-    apply: Rle_lt_trans (_ : d' Y0 y + d' y y' < _);
-      first by apply: triangle_inequality.
-    rewrite Rplus_comm.
-    exact: Rplus_lt_compat_r.
-  + apply: Rlt_move_pl2mr.
-    rewrite Rplus_comm.
-    apply: Rlt_move_mr2pl.
-    apply: Rle_lt_trans (_ : d' Y0 y' + d' y' y < _);
-      first by apply: triangle_inequality.
-    apply: Rplus_lt_compat_l.
-    by rewrite metric_sym // Ropp_involutive.
-- apply: R_compact_subset_bounded.
-  have ->: Im Full_set (fun x : X => d' (y0 x) (f x)) = Im Full_set ft
-    by apply: Extensionality_Ensembles; split;
-       move=> _ [x _ _ ->]; exists x => //; rewrite y0Y0.
+  - exact: MetricTopology_metrizable.
+  - exact: RTop_metrization.
+  - move=> eps eps_pos.
+    exists eps; split => //.
+    move=> y' d'yy'_eps.
+    rewrite /R_metric /g.
+    apply: Rabs_def1. 
+    + apply: Rlt_move_pr2ml.
+      apply: Rle_lt_trans (_ : d' Y0 y + d' y y' < _);
+        first by apply: triangle_inequality.
+      rewrite Rplus_comm.
+      exact: Rplus_lt_compat_r.
+    + apply: Rlt_move_pl2mr.
+      rewrite Rplus_comm.
+      apply: Rlt_move_mr2pl.
+      apply: Rle_lt_trans (_ : d' Y0 y' + d' y' y < _);
+        first by apply: triangle_inequality.
+      apply: Rplus_lt_compat_l.
+      by rewrite metric_sym // Ropp_involutive.
+}
+apply: R_compact_subset_bounded.
+have ->: Im Full_set (fun x : X => d' (y0 x) (f x)) = Im Full_set ft
+  by apply: Extensionality_Ensembles; split;
+     move=> _ [x _ _ ->]; exists x => //; rewrite y0Y0.
 (* Require Import ContinuousFactorization. *)
 (*have ft_img:
   forall x:point_set Xt, In (Im Full_set ft) (ft x).
 move=>x.
 by apply Im_intro with x.*)
-  set ftr := continuous_surj_factorization ft.
-  apply: (compact_image ftr) => //.
-  + exact: continuous_surj_factorization_is_continuous.
-  + exact: continuous_surj_factorization_is_surjective.
+set ftr := continuous_surj_factorization ft.
+apply: (compact_image ftr) => //.
+- exact: continuous_surj_factorization_is_continuous.
+- exact: continuous_surj_factorization_is_surjective.
 Qed. (* continuous_bounded *)
 
 Let W (eps:R):
@@ -492,18 +498,20 @@ pose RR (n:nat) (g:CMap):Prop :=
   In (Complement (W r)) g /\ um fr g < (/ INR (S n)).
 have [gn Hgn]: exists gn : nat -> CMap,
   forall n:nat, RR n (gn n).
-- apply: choice => n.
+{ apply: choice => n.
   have [gn Hgn]:
     Inhabited (Intersection (Complement (W r))
                             (open_ball CMap um fr (/ INR (S n)))).
-  + apply: (closure_impl_meets_every_open_neighborhood _ _ fr) => //.
-    * apply: open_ball_open.
+  { apply: (closure_impl_meets_every_open_neighborhood _ _ fr) => //.
+    - apply: open_ball_open.
       auto with *.
-    * constructor. 
+    - constructor. 
       rewrite metric_zero; last by apply: um_metric.
       auto with *.
+  }
   case: Hgn => {gn} gn CWgn [frgn].
   exists gn; split => //.
+}
 pose RA (k:nat) (Ak: X * X * Y * CMap): Prop :=
     (proj1_sig (snd Ak)) (fst (fst (fst Ak))) = (snd (fst Ak)) /\
     (proj1_sig (snd Ak)) (snd (fst (fst Ak))) = (snd (fst Ak)) /\
@@ -511,40 +519,43 @@ pose RA (k:nat) (Ak: X * X * Y * CMap): Prop :=
     um fr (snd Ak) < / INR (S k). 
 have [abcgn Habcgn]: exists Ak: nat -> X * X * Y * CMap,
    forall k:nat, (RA k (Ak k)).
-- apply: choice => k.
+{ apply: choice => k.
 (********)
   set nr := S O.
 (********)
   have [ak [bk [Ck dakbk_r]]]: exists (ak bk:X), 
       (proj1_sig (gn (max nr k)) ak) = (proj1_sig (gn (max nr k)) bk) /\
       d ak bk >= r.
-  + apply: NNPP => Hnex.
+  { apply: NNPP => Hnex.
     case: (Hgn (max nr k)).
     case=> ak bk Ck.
     apply: Rnot_ge_lt => dakbk_r.
     apply: Hnex.
     by exists ak, bk.
+  }
   exists (ak, bk, (proj1_sig (gn (max nr k)) ak), (gn (max nr k))).
   repeat split=> //.
   case: (Hgn (max nr k)) => _ H0.
   apply: Rlt_le_trans (_ : / INR (S (Init.Nat.max nr k)) <= _) => //.
   apply: Rle_inv_INR_S_contravar.
   exact: Max.le_max_r.
+}
 pose a_net:Net nat_DS Xt:= (fun (n:nat) => fst (fst (fst (abcgn n)))).
 have [lim_a H_lim_a]: exists a: point_set Xt, net_cluster_point a_net a
   by apply: compact_impl_net_cluster_point => //; apply: (inhabits O).
 pose a_cond (n N:nat):= 
   (n <= N)%nat /\ d lim_a (a_net N) < / INR (S n).
 have [Na H_Na]: exists Na : nat -> nat, forall n, a_cond n (Na n).
-- apply: choice => n.
+{ apply: choice => n.
   case: (H_lim_a (open_ball X d lim_a (/INR (S n))) _ _ n).
-  + apply: open_ball_open.
-  + auto with *.
-  + constructor.
+  - apply: open_ball_open.
+  - auto with *.
+  - constructor.
     rewrite metric_zero => //.
     auto with *.
-  + move=> x [H [H0]].
+  - move=> x [H [H0]].
     by exists x.
+}
 pose b_net:Net nat_DS Xt:= (fun (n:nat) => snd (fst (fst (abcgn (Na n))))).
 have [lim_b H_lim_b]: exists b: point_set Xt, net_cluster_point b_net b
   by apply: compact_impl_net_cluster_point => //; apply: (inhabits O).
@@ -552,17 +563,18 @@ pose ab_cond (n N:nat):= (n <= N)%nat
   /\ (d lim_a (a_net (Na N)) < / INR (S n))
   /\ (d lim_b (b_net N) < / INR (S n)).
 have [Nab H_Nab]: exists Nab : nat -> nat, forall n, ab_cond n (Nab n).
-- apply: choice => n.
+{ apply: choice => n.
   case: (H_lim_b (open_ball X d lim_b (/INR (S n))) _ _ n).
-  + apply: open_ball_open.
-  + auto with *.
-  + constructor.
+  - apply: open_ball_open.
+  - auto with *.
+  - constructor.
     rewrite metric_zero => //.
     auto with *.
-  + move=> x [H [H0]].
+  - move=> x [H [H0]].
     exists x; repeat split => //.
     apply: Rlt_le_trans (_ : /INR (S x) <= _); first by case: (H_Na x).
     exact: Rle_inv_INR_S_contravar.
+}
 (*******************)
 pose aN (n:nat):X :=  a_net (Na (Nab n)).
 pose bN (n:nat):X :=  b_net (Nab n). 
@@ -576,18 +588,20 @@ have gNbN_cN : forall n:nat, proj1_sig (gN n) (bN n) = (cN n)
 have daNbN_r : forall n:nat, d (aN n) (bN n) >= r
   by move=> n; case: (Habcgn (Na (Nab n))) => _ [_ []].
 have umfrgN : forall n:nat, um fr (gN n) < / INR (S n).
-- move=> n.
+{ move=> n.
   apply: Rlt_le_trans (_ : / INR (S (Na (Nab n))) <= _);
     first by case: (Habcgn (Na (Nab n))) => _ [_ []].
   apply: Rle_inv_INR_S_contravar.
   apply: le_trans (_ : (Nab n <= _)%nat); first by case: (H_Nab n).
   by case: (H_Na (Nab n)).
+}
 have dlimaaN: forall n:nat, d lim_a (aN n) < / INR (S n).
-- move=> n.
+{ move=> n.
   apply: Rlt_le_trans (_ : / INR (S (Nab n)) <= _);
     first by case: (H_Na (Nab n)).
   apply: Rle_inv_INR_S_contravar.
   by case: (H_Nab n).
+}
 have dlimbbN: forall n:nat, d lim_b (bN n) < / INR (S n)
   by move=> n; case: (H_Nab n) => _ [].
 have d_metrizes: metrizes Xt d 
@@ -595,7 +609,7 @@ have d_metrizes: metrizes Xt d
 have d'_metrizes: metrizes Yt d' 
   by apply: MetricTopology_metrizable.
 have frab: (proj1_sig fr lim_a) = (proj1_sig fr lim_b).
-- apply: (metric_strict _ d') => //.
+{ apply: (metric_strict _ d') => //.
   apply: Rle_antisym; last by apply: Rge_le; apply: metric_nonneg.
   apply: Rnot_gt_le.
   set eps := d' (proj1_sig fr lim_a) (proj1_sig fr lim_b).
@@ -623,17 +637,18 @@ have frab: (proj1_sig fr lim_a) = (proj1_sig fr lim_b).
     by apply: RationalsInReals.inverses_of_nats_approach_0;
        do !apply: Rmin_pos => //; fourier.
   have HinvN: / INR (S N) < / INR N.
-  + apply: Rinv_lt_contravar.
+  { apply: Rinv_lt_contravar.
     apply: Rmult_lt_0_compat; auto with *.
     exact: lt_INR.
+  }
   have: d' (proj1_sig fr lim_a) (proj1_sig fr lim_b) <
         /4*eps + /4*eps + /4*eps + /4*eps.
-  + apply: Rle_lt_trans
+  { apply: Rle_lt_trans
              (_ : d' (proj1_sig fr lim_a) (proj1_sig fr (bN N))
                   + d' (proj1_sig fr (bN N)) (proj1_sig fr lim_b) < _);
       first by apply: triangle_inequality.
     apply: Rplus_lt_compat; last first.
-    * rewrite metric_sym //.
+    - rewrite metric_sym //.
       apply: fr_conti_b.
       apply: Rlt_le_trans (_ : del <= _); last by apply: Rmin_r.
       apply: Rlt_le_trans (_ : Rmin (/4*eps) del <= _ ); last by apply: Rmin_r.
@@ -644,7 +659,7 @@ have frab: (proj1_sig fr lim_a) = (proj1_sig fr lim_b).
                   d' (proj1_sig (gN N) (bN N)) (proj1_sig fr (bN N)) < _);
       first by apply: triangle_inequality.
     apply: Rplus_lt_compat; last first.
-    * rewrite metric_sym //.
+    - rewrite metric_sym //.
       apply: Rle_lt_trans (_ : um fr (gN N) < _); first by apply: Rle_d'_um.
       apply: Rlt_trans (_ : / INR (S N) < _) => //.
       apply: Rlt_trans (_ : / INR N < _) => //.
@@ -659,19 +674,21 @@ have frab: (proj1_sig fr lim_a) = (proj1_sig fr lim_b).
                              d' (proj1_sig fr (aN N)) (cN N) < _);
       first by apply: triangle_inequality.
     apply: Rplus_lt_compat.
-    * apply: fr_conti_a.
+    - apply: fr_conti_a.
       apply: Rlt_le_trans (_ : del <= _); last by apply: Rmin_l.
       apply: Rlt_le_trans (_ : Rmin (/4*eps) del <= _ ); last by apply: Rmin_r.
       apply: Rlt_trans (_ : / INR N < _) => //.
       exact: Rlt_trans (_ : / INR (S N) < _).
-    * rewrite -gNaN_cN.
+    - rewrite -gNaN_cN.
       apply: Rle_lt_trans (_ : um fr (gN N) < _); first by apply: Rle_d'_um.
       apply: Rlt_trans (_ : / INR (S N) < _) => //.
       apply: Rlt_trans (_ : / INR N < _) => //.
       apply: Rlt_le_trans (_ : Rmin (/ 4 * eps) del <= _) => //.
       exact: Rmin_l.
+  }
   rewrite [x in _ < x](_ : _ = eps); last by field.
   exact: Rlt_irrefl.
+}
 have dlimalimb_r: d lim_a lim_b < r
   by apply: fr_in_W.
 set eps2 := r - d lim_a lim_b.
@@ -681,10 +698,11 @@ have [N [N_pos INR_e2]]: exists N:nat, (N > 0)%nat /\ / INR N < /2 * eps2.
   by apply: RationalsInReals.inverses_of_nats_approach_0; fourier.
 apply: Rlt_not_ge (daNbN_r N).
 have HinvSN: / INR (S N) < /2 * eps2.
-- apply: Rlt_trans (_ : / INR N < _) => //.
+{ apply: Rlt_trans (_ : / INR N < _) => //.
   apply: Rinv_lt_contravar.
   apply: Rmult_lt_0_compat; auto with *.
   exact: lt_INR.
+}
 rewrite (_ : r = /2 * eps2 + ((r - eps2) + /2 * eps2)); last by field.
 apply: Rle_lt_trans (_ : d (aN N) lim_a + d lim_a (bN N) < _);
   first by apply: triangle_inequality.
@@ -729,9 +747,10 @@ apply: closed_complement_open => //.
 apply: compact_closed => //.
 have CImUf: forall xP : {x: point_set Xt | In (Complement U) x},
     Complement (Im U f) (f (proj1_sig xP)).
-- move=> [x Hx].
+{ move=> [x Hx].
   rewrite bijection_complement //.
   by exists x.
+}
 pose (fP:=fun xP: {x:point_set Xt | In (Complement U) x} =>
   (exist (Complement (Im U f)) (f (proj1_sig xP)) (CImUf xP)  )).
 apply: (@compact_image 
@@ -799,17 +818,18 @@ set um_restriction := fun f1PP f2PP: point_set CfHt =>
 have um_restriction_metric: metric um_restriction
   by apply: d_restriction_metric; apply: um_metric.
 have CfHt_baire: baire_space CfHt.
-- apply: (BaireCategoryTheorem _ um_restriction) => //;
+{ apply: (BaireCategoryTheorem _ um_restriction) => //;
     first by exact: d_restriction_metrizes.
   have um_is_metric: metric um by apply: um_metric.
   have um_is_complete: complete um um_metric
     by apply: um_complete; apply: compact_complete; exact: Y_compact.
   apply: closed_subset_of_complete_is_complete => //.
   exact: closure_closed.
+}
 set Wn: IndexedFamily nat (point_set CfHt) :=
   fun n:nat => inverse_image (subspace_inc CfH)  (W (/INR (S n))).
 have WnOD: forall n:nat, open (Wn n) /\ dense (Wn n).   
-- move=>n; split;
+{ move=>n; split;
     first by apply: subspace_inc_continuous; apply: W_is_open; auto with *.
 (********************************************)  
   apply: meets_every_nonempty_open_impl_dense.
@@ -819,30 +839,33 @@ have WnOD: forall n:nat, open (Wn n) /\ dense (Wn n).
     Included (open_ball (point_set CMapt) um (proj1_sig gPP) r) V
     by apply: open_ball_in_open; move: InUgPP; by rewrite U_iV => -[].
   have [fh0 h1_fh0]: Inhabited (Intersection fH (open_ball (point_set CMapt) um (proj1_sig gPP) (r*/2))).
-  + apply: (closure_impl_meets_every_open_neighborhood _ _ (proj1_sig gPP)).
-    * by case: (gPP).
-    * by apply: open_ball_open; fourier.
-    * constructor.
+  { apply: (closure_impl_meets_every_open_neighborhood _ _ (proj1_sig gPP)).
+    - by case: (gPP).
+    - by apply: open_ball_open; fourier.
+    - constructor.
       have ->: um (proj1_sig gPP) (proj1_sig gPP) = 0
         by apply: metric_zero; apply: um_metric.
       by fourier.
+  }
   case: h1_fh0 => {fh0} fh0 [h0 [[h' h0_conti h'_conti h_h'h0 h_h0h'] h_fh0]] [umgPfh0].
   set eps1:= Rmin (r*/2) (/ INR (S n)).
   have [delta [pos_delta h_delta]]: exists delta:R, delta > 0 /\
     forall x1 x2 : X, d x1 x2 < delta -> d (h' x1) (h' x2) < eps1.
-  + apply: dist_uniform_on_compact => //.
+  { apply: dist_uniform_on_compact => //.
     apply: Rmin_pos; by [fourier | auto with *].
+  }
   case: (f_BS (Rmin delta (r*/2))); first by apply: Rmin_pos => //; fourier.
   move=> k [[k' k_conti k'_conti h_k'k h_kk'] [h1_k h2_k]].
   set k'h := fun x: point_set Xt => k' (h0 x).
   set h'k := fun x: point_set Xt => h' (k x).  
   set fk'h := fun x: point_set Xt => f (k'h x).
   have k'h_homeo: homeomorphism k'h.
-  + exists h'k.
-    * exact: continuous_composition.
-    * exact: continuous_composition.
-    * by move=> x; rewrite /h'k /k'h h_kk' h_h'h0.
-    * by move=> x; rewrite /k'h /h'k h_h0h' h_k'k.
+  { exists h'k.
+    - exact: continuous_composition.
+    - exact: continuous_composition.
+    - by move=> x; rewrite /h'k /k'h h_kk' h_h'h0.
+    - by move=> x; rewrite /k'h /h'k h_h0h' h_k'k.
+  }
   have fk'h_conti: continuous fk'h
     by apply: continuous_composition => //; exact: continuous_composition.
   have fk'h_bdd_conti:
@@ -856,7 +879,7 @@ have WnOD: forall n:nat, open (Wn n) /\ dense (Wn n).
     by apply: closure_inflationary; exists k'h; split.
   set fk'hPP := exist (fun f0P: point_set CMapt => In CfH f0P) fk'hP InCfHfk'hP. 
   exists fk'hPP; split.
-  + constructor => x1 x2 fk'hx1_fk'hx2.
+  - constructor => x1 x2 fk'hx1_fk'hx2.
     rewrite /= /fk'h in fk'hx1_fk'hx2.
     have: d (k (k'h x1)) (k (k'h x2)) < delta
       by apply: Rlt_le_trans (_ : Rmin delta (r * / 2) <= _);
@@ -865,7 +888,7 @@ have WnOD: forall n:nat, open (Wn n) /\ dense (Wn n).
     rewrite !h_h'h0 => /Rlt_le_trans.
     apply.
     apply: Rmin_r.
-  + rewrite U_iV.
+  - rewrite U_iV.
     constructor.
     rewrite /fk'hPP /=.
     apply: IcOB_V.
@@ -880,6 +903,7 @@ have WnOD: forall n:nat, open (Wn n) /\ dense (Wn n).
     apply: Rlt_le.
     apply: Rlt_le_trans (_ : Rmin delta (r * / 2) <= _); first by apply: h1_k.
     exact: Rmin_r.
+}
 have IWn_dense: dense (IndexedIntersection Wn)
   by apply: CfHt_baire; apply: WnOD.
 have InCfHfP: In CfH fP.
@@ -887,15 +911,16 @@ have InCfHfP: In CfH fP.
 set fPP := exist (fun gP : CMap => In CfH gP) fP InCfHfP.
 set OBeps := (open_ball CMap um fP eps). 
 have [hPP H_h]: Inhabited (Intersection (IndexedIntersection Wn) (inverse_image (subspace_inc CfH) OBeps)).
-- apply: dense_meets_every_nonempty_open.
-  + exact: IWn_dense.
-  + apply: subspace_inc_continuous.
+{ apply: dense_meets_every_nonempty_open.
+  - exact: IWn_dense.
+  - apply: subspace_inc_continuous.
     exact: open_ball_open.
-  + exists fPP.
+  - exists fPP.
     constructor.
     constructor.
     rewrite metric_zero //.
     exact: um_metric.
+}
 case: H_h => {hPP} _ [hPP Wn_h] [OB_h].
 (***)
 set hP := proj1_sig hPP.
@@ -926,12 +951,13 @@ apply: bij_conti_is_homeo_for_compact_Hausdorff_spaces => //.
   + move=> y.
     apply: NNPP => h_nx.
     have InCImhy: In (Complement (Im Full_set h)) y.
-    * case E: _ / => [x InXx y' y_hx].
+    { case E: _ / => [x InXx y' y_hx].
       apply: h_nx.
       exists x.
       by rewrite E y_hx.
+    }
     have CImh_open: open (@Complement (point_set Yt) (Im Full_set h)).
-    * apply: closed_complement_open.
+    { apply: closed_complement_open.
       rewrite Complement_Complement.
       apply: compact_closed; first by apply: MetricTopology_Hausdorff.
       have h_img: forall x:point_set Xt, In (Im Full_set h) (h x)
@@ -942,31 +968,34 @@ apply: bij_conti_is_homeo_for_compact_Hausdorff_spaces => //.
       case=> _ [x1 InF_x y1 y1_hx1].
       exists x1.
       exact: subset_eq_compatT.
+    }
 (*******************************) 
     have [r [r_pos IncObCImh]]: exists r:R, r > 0 /\
       Included (open_ball (point_set Yt) d' y r) (Complement (Im Full_set h))
       by apply: open_ball_in_open.
     have fH_hP_r: Inhabited (
                     Intersection fH (open_ball (point_set CMapt) um hP r)).
-    * { apply: (closure_impl_meets_every_open_neighborhood _ _ hP).
-        - rewrite /hP. 
-          by case: (proj2_sig hPP). 
-        - exact: open_ball_open.
-        - constructor.
-          rewrite metric_zero //.
-          by apply: um_metric.
-      }
+    { apply: (closure_impl_meets_every_open_neighborhood _ _ hP).
+      - rewrite /hP. 
+        by case: (proj2_sig hPP). 
+      - exact: open_ball_open.
+      - constructor.
+        rewrite metric_zero //.
+        by apply: um_metric.
+    }
     case: fH_hP_r => _ [fh1 [h1 [h1_homeo fh1_f_h1]] [umhPfh1_r]].
     have [x1 y_fh1x1]: exists x1:point_set Xt, y = f (h1 x1).
-    * case: h1_homeo => h1' h1_cont h1'_cont h1'h1 h1h1'.
+    { case: h1_homeo => h1' h1_cont h1'_cont h1'h1 h1h1'.
       case: (f_surj y) => x2 fx2_y.
       exists (h1' x2).
       by rewrite h1h1'.
+    }
     have InObyr_hx1: In (open_ball (point_set Yt) d' y r) (h x1).
-    * constructor.
+    { constructor.
       rewrite /h y_fh1x1 -fh1_f_h1 metric_sym //.
       apply: Rle_lt_trans (_ : um hP fh1 < _) => //.
       exact: Rle_d'_um.
+    }
     have: In (Complement (Im Full_set h)) (h x1)
       by apply: IncObCImh.
     apply.

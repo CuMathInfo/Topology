@@ -267,23 +267,24 @@ move=> x0 r0; rewrite /closed.
 set cover := fun (xd: { x: point_set X | d x0 x > r0 }%type) =>
   open_ball (point_set X) d (proj1_sig xd) (d x0 (proj1_sig xd) - r0).  
 suff ->: Complement (closed_ball x0 r0) = IndexedUnion cover.
-- apply: open_indexed_union => xd.
+{ apply: open_indexed_union => xd.
   apply: open_ball_is_open.
   apply: Rgt_minus.
   exact: (proj2_sig xd).
-- apply: Extensionality_Ensembles; split.
-  + move=> x /Rnot_le_gt dx0x_gt_r0.
-    exists (exist _ x dx0x_gt_r0).
-    constructor => //=.
-    rewrite metric_zero //.
-    exact: Rgt_minus.
-  + move=> _ [a x [/Rlt_move_mr2pl]].
-    rewrite (metric_sym _ _ d_metric) Rplus_comm => /Rlt_move_pl2mr H.
-    apply: Rgt_not_le.
-    apply: Rge_gt_trans (_ : d x0 (proj1_sig a) - d x (proj1_sig a) > _) => //.
-    apply: Rge_move_pl2mr.
-    apply: Rle_ge.
-    exact: triangle_inequality.
+}
+apply: Extensionality_Ensembles; split.
+- move=> x /Rnot_le_gt dx0x_gt_r0.
+  exists (exist _ x dx0x_gt_r0).
+  constructor => //=.
+  rewrite metric_zero //.
+  exact: Rgt_minus.
+- move=> _ [a x [/Rlt_move_mr2pl]].
+  rewrite (metric_sym _ _ d_metric) Rplus_comm => /Rlt_move_pl2mr H.
+  apply: Rgt_not_le.
+  apply: Rge_gt_trans (_ : d x0 (proj1_sig a) - d x (proj1_sig a) > _) => //.
+  apply: Rge_move_pl2mr.
+  apply: Rle_ge.
+  exact: triangle_inequality.
 Qed.
 
 (* The Baire Category Theorem for complete metric spaces *)
@@ -313,10 +314,10 @@ set r0:=r0_t/2.
 have r0_pos: r0>0 by rewrite /r0; fourier.
 set rp0 := exist (fun r:R => r>0)r0 r0_pos.
 (**** Axiom of Choice used *******)
-- have [Fn [H_0 H_n]]: exists Fn : nat -> point_set X * { r:R | r>0 } * nat,
+have [Fn [H_0 H_n]]: exists Fn : nat -> point_set X * { r:R | r>0 } * nat,
     (Fn 0%nat) = (pair (pair x0 rp0) 0%nat) /\
     (forall n : nat, (IStep (Fn n) (Fn (S n)))).
-  apply: FDC.
+{ apply: FDC.
 (*********************************)
   (* step n *)
   move=> xrn.
@@ -325,204 +326,192 @@ set rp0 := exist (fun r:R => r>0)r0 r0_pos.
   set rn_pos := proj2_sig (snd (fst xrn)).
   set nn := snd xrn.
   have [yn] : Inhabited (Intersection (V (S nn)) (open_ball (point_set X) d xn (rn * /2))).  
-  + apply: dense_meets_every_nonempty_open.
-    * by case: (H_od (S nn)).
-    * apply: open_ball_is_open.
+  { apply: dense_meets_every_nonempty_open.
+    - by case: (H_od (S nn)).
+    - apply: open_ball_is_open.
       exact: eps2_Rgt_R0.
-    * exists xn => /=; constructor.
+    - exists xn => /=; constructor.
       rewrite /= metric_zero //.
       exact: eps2_Rgt_R0.
-  + case/open_ball_in_open_set.
-    * apply: open_intersection2; first by case: (H_od (S nn)).
-      apply: open_ball_is_open.
-      exact: eps2_Rgt_R0.
-    * move=> rn1_t [rn1_t_pos HIbVnb].
-      set rn1 := Rmin (rn1_t/2) (rn* /2).
-      have rn1_pos: rn1 > 0
-        by rewrite /rn1; apply/Rmin_Rgt; split; apply: eps2_Rgt_R0.
-      set rpn1 := exist (fun r:R => r > 0) rn1 rn1_pos.
-      exists (yn, rpn1, S nn).
-      repeat split => /=; [ by apply: Rmin_r | | ].
-      - rewrite -/rn -/xn.
-        have: In (Intersection (V (S nn)) (open_ball (point_set X) d xn (rn * /2))) yn
-          by apply: HIbVnb; constructor; rewrite metric_zero.
-        by case => [? _ []].
-      - move=>x1 In_rn1.
-        have In_rn1_t : In (open_ball (point_set X) d yn rn1_t) x1.
-        + constructor.
-          case: In_rn1 => Hlt.
-          apply: Rlt_le_trans (_ : 2 * rn1 <= _) => //.
-          have rn1_le_rn1_t_half: rn1 <= rn1_t/2 by apply: Rmin_l.
-          by fourier.
-        + have: In (Intersection (V (S nn))
-                   (open_ball (point_set X) d xn (rn * /2))) x1
-            by apply: HIbVnb.
-          by case.
+  }
+  case/open_ball_in_open_set.
+  - apply: open_intersection2; first by case: (H_od (S nn)).
+    apply: open_ball_is_open.
+    exact: eps2_Rgt_R0.
+  - move=> rn1_t [rn1_t_pos HIbVnb].
+    set rn1 := Rmin (rn1_t/2) (rn* /2).
+    have rn1_pos: rn1 > 0
+      by rewrite /rn1; apply/Rmin_Rgt; split; apply: eps2_Rgt_R0.
+    set rpn1 := exist (fun r:R => r > 0) rn1 rn1_pos.
+    exists (yn, rpn1, S nn).
+    repeat split => /=; [ by apply: Rmin_r | | ].
+    + rewrite -/rn -/xn.
+      have: In (Intersection (V (S nn)) (open_ball (point_set X) d xn (rn * /2))) yn
+        by apply: HIbVnb; constructor; rewrite metric_zero.
+      by case => [? _ []].
+    + move=>x1 In_rn1.
+      have In_rn1_t : In (open_ball (point_set X) d yn rn1_t) x1.
+      { constructor.
+        case: In_rn1 => Hlt.
+        apply: Rlt_le_trans (_ : 2 * rn1 <= _) => //.
+        have rn1_le_rn1_t_half: rn1 <= rn1_t/2 by apply: Rmin_l.
+        by fourier.
+      }
+      have: In (Intersection (V (S nn))
+               (open_ball (point_set X) d xn (rn * /2))) x1
+        by apply: HIbVnb.
+      by case.
+}
 (* sequences and properties obtained so far*)
-- set (x_n (n : DS_set nat_DS) := fst (fst (Fn n))).
-  have x_n_0 : x_n 0%nat = x0
-    by rewrite /x_n H_0.
-  set (r_n (n : nat) := proj1_sig (snd (fst (Fn n)))).
-  have r_n_0 : r_n 0%nat = r0
-    by rewrite /r_n H_0.
-  have r_n_pos : forall n : nat, r_n n > 0
-    by move => n; apply: proj2_sig.
-  have r_n_r_Sn : forall n : nat, r_n (S n) <= (r_n n) * /2.
-    by move=> n; case: (H_n n) => ? []. 
-  have r_n_r_ni : forall n i : nat, r_n (n+i)%nat <= r_n n * (/2)^i.
-  + move=> n.
-    elim=> [| i IHi] /=; first by rewrite -plus_n_O Rmult_1_r; apply: Rle_refl.
-    rewrite -plus_n_Sm.
-    apply: Rle_trans (_ :  r_n (n + i)%nat * / 2 <= _) => //.
-    rewrite (_ : /2 * (/2)^i = (/2)^i * /2); last by auto with real.
-    rewrite -Rmult_assoc.
-    apply: Rmult_le_compat_r => //.
+set (x_n (n : DS_set nat_DS) := fst (fst (Fn n))).
+have x_n_0 : x_n 0%nat = x0
+  by rewrite /x_n H_0.
+set (r_n (n : nat) := proj1_sig (snd (fst (Fn n)))).
+have r_n_0 : r_n 0%nat = r0
+  by rewrite /r_n H_0.
+have r_n_pos : forall n : nat, r_n n > 0
+  by move => n; apply: proj2_sig.
+have r_n_r_Sn : forall n : nat, r_n (S n) <= (r_n n) * /2.
+  by move=> n; case: (H_n n) => ? []. 
+have r_n_r_ni : forall n i : nat, r_n (n+i)%nat <= r_n n * (/2)^i.
+{ move=> n.
+  elim=> [| i IHi] /=; first by rewrite -plus_n_O Rmult_1_r; apply: Rle_refl.
+  rewrite -plus_n_Sm.
+  apply: Rle_trans (_ :  r_n (n + i)%nat * / 2 <= _) => //.
+  rewrite (_ : /2 * (/2)^i = (/2)^i * /2); last by auto with real.
+  rewrite -Rmult_assoc.
+  apply: Rmult_le_compat_r => //.
+  by auto with real.
+}
+have x_n_x_Sn_r_n : forall n : nat, d (x_n n) (x_n (S n)) < (r_n n) * /2
+  by move=> n; case: (H_n n) => ? [? []].
+have x_ni_x_nSi_r_n : forall n i : nat, 
+  d (x_n (n+i)%nat) (x_n (n + (S i))%nat) < (r_n n)* /2 * (/2)^i.
+{ move=> n i.
+  rewrite -plus_n_Sm.
+  apply: Rlt_le_trans (_ : r_n (n + i)%nat * / 2 <= _) => //.
+  rewrite (_ : r_n n * /2 * (/2)^i = r_n n * (/2)^i * /2); last by field.
+  apply: Rmult_le_compat_r => //.
+  by auto with real.
+}
+have x_n_x_nk: forall n : nat, 
+  forall k : nat, d (x_n n%nat) (x_n (n+k)%nat) <= r_n n * (1 - (/2)^k). 
+{ move=> n.
+  elim=> [| k IHk] /=.
+  - rewrite -plus_n_O metric_zero // /Rminus Rplus_opp_r Rmult_0_r.
     by auto with real.
-  have x_n_x_Sn_r_n : forall n : nat, d (x_n n) (x_n (S n)) < (r_n n) * /2
-    by move=> n; case: (H_n n) => ? [? []].
-  have x_ni_x_nSi_r_n : forall n i : nat, 
-    d (x_n (n+i)%nat) (x_n (n + (S i))%nat) < (r_n n)* /2 * (/2)^i.
-  + move=> n i.
-    rewrite -plus_n_Sm.
-    apply: Rlt_le_trans (_ : r_n (n + i)%nat * / 2 <= _) => //.
-    rewrite (_ : r_n n * /2 * (/2)^i = r_n n * (/2)^i * /2); last by field.
-    apply: Rmult_le_compat_r => //.
-    by auto with real.
-  have x_n_x_nk: forall n : nat, 
-    forall k : nat, d (x_n n%nat) (x_n (n+k)%nat) <= r_n n * (1 - (/2)^k). 
-  + move=> n.
-    elim=> [| k IHk] /=.
-    * rewrite -plus_n_O metric_zero // /Rminus Rplus_opp_r Rmult_0_r.
-      by auto with real.
-    * apply: Rle_trans (_ : d (x_n n) (x_n (n + k)%nat)
-                            + d (x_n (n + k)%nat) (x_n (n + (S k))%nat) <= _);
-        first by apply: triangle_inequality.
-      rewrite [x in _ <= x](_ : _ = r_n n * (1 - (/ 2) ^ k)
-                                    + r_n n * / 2 * (/ 2) ^ k); last by field.
-      apply: Rlt_le.
-      exact: Rplus_le_lt_compat => //.
-  have HCauchy: cauchy d x_n. 
-  + move=> eps eps_pos.
-    have [N HN]: exists N:nat, forall n:nat,
-          (n >=N)%nat -> (/2)^n <= (/r0) * (/2) * eps.  
-    * apply: pow_inv_2_n_approach_0.
-      by do !apply: Rmult_gt_0_compat => //; apply: Rinv_0_lt_compat; auto with real.
-    exists N.
-    have Hn: forall n:nat, (n>=N)%nat -> d (x_n N) (x_n n) < r0 * ((/2)^N).
-    * move=>n ngeN.
-      rewrite (_ : n = (N + (n - N))%nat); last by auto with *.
-      set k := (n - N)%nat.
-      apply: Rle_lt_trans (_ : r_n N * (1 - (/ 2) ^ k) < _) => //.
-      move: (r_n_r_ni 0%nat N) => /=.
-      rewrite r_n_0.
-      apply: Rlt_le_trans.
-      rewrite -[x in _ < x]Rmult_1_r.
-      apply: Rmult_lt_compat_l; first by apply: Rgt_lt.
-      apply: Rlt_move_pr2ml.
-      rewrite -[x in x < _]Rplus_0_r.
-      apply: Rplus_lt_compat_l.
-      by auto with real.
-    move=> m1 n1 m1gtN n1gtN.
-    apply: Rle_lt_trans (_ : d (x_n m1) (x_n N) + d (x_n N) (x_n n1) < _);
+  - apply: Rle_trans (_ : d (x_n n) (x_n (n + k)%nat)
+                          + d (x_n (n + k)%nat) (x_n (n + (S k))%nat) <= _);
       first by apply: triangle_inequality.
-    rewrite (metric_sym _ _ d_metric).
-    apply: Rlt_le_trans (_ : r0 * (/ 2) ^ N + r0 * (/ 2) ^ N <= _);
-      first by apply: Rplus_lt_compat; apply: Hn.
-    rewrite [x in x <= _](_ : _ = 2 * r0 * (/2)^N); last by field.
-    apply: Rle_trans (_ : 2 * r0 * (/ r0 * / 2 * eps) <= _);
-      first by apply: Rmult_le_compat_l; [fourier | apply: HN].
-    * auto with real.
-    * rewrite [x in x <= _](_ : _ = eps); first by auto with real.
-      field.
-      auto with real.
+    rewrite [x in _ <= x](_ : _ = r_n n * (1 - (/ 2) ^ k)
+                                  + r_n n * / 2 * (/ 2) ^ k); last by field.
+    apply: Rlt_le.
+    exact: Rplus_le_lt_compat => //.
+}
+have HCauchy: cauchy d x_n. 
+{ move=> eps eps_pos.
+  have [N HN]: exists N:nat, forall n:nat,
+        (n >=N)%nat -> (/2)^n <= (/r0) * (/2) * eps.  
+  { apply: pow_inv_2_n_approach_0.
+    by do !apply: Rmult_gt_0_compat => //; apply: Rinv_0_lt_compat; auto with real.
+  }
+  exists N.
+  have Hn: forall n:nat, (n>=N)%nat -> d (x_n N) (x_n n) < r0 * ((/2)^N).
+  { move=>n ngeN.
+    rewrite (_ : n = (N + (n - N))%nat); last by auto with *.
+    set k := (n - N)%nat.
+    apply: Rle_lt_trans (_ : r_n N * (1 - (/ 2) ^ k) < _) => //.
+    move: (r_n_r_ni 0%nat N) => /=.
+    rewrite r_n_0.
+    apply: Rlt_le_trans.
+    rewrite -[x in _ < x]Rmult_1_r.
+    apply: Rmult_lt_compat_l; first by apply: Rgt_lt.
+    apply: Rlt_move_pr2ml.
+    rewrite -[x in x < _]Rplus_0_r.
+    apply: Rplus_lt_compat_l.
+    by auto with real.
+  }
+  move=> m1 n1 m1gtN n1gtN.
+  apply: Rle_lt_trans (_ : d (x_n m1) (x_n N) + d (x_n N) (x_n n1) < _);
+    first by apply: triangle_inequality.
+  rewrite (metric_sym _ _ d_metric).
+  apply: Rlt_le_trans (_ : r0 * (/ 2) ^ N + r0 * (/ 2) ^ N <= _);
+    first by apply: Rplus_lt_compat; apply: Hn.
+  rewrite [x in x <= _](_ : _ = 2 * r0 * (/2)^N); last by field.
+  apply: Rle_trans (_ : 2 * r0 * (/ r0 * / 2 * eps) <= _);
+    first by apply: Rmult_le_compat_l; [fourier | apply: HN].
+  * auto with real.
+  * rewrite [x in x <= _](_ : _ = eps); first by auto with real.
+    field.
+    auto with real.
+}
 (***********************)
-  case: (H_cplt _ HCauchy) => xL Lim.
+case: (H_cplt _ HCauchy) => xL Lim.
 (***********************)
-  set D:= open_ball (point_set X) d xL r0.
-  have HopenD: open D
-    by apply: open_ball_is_open.
-  case: (Lim D).
+set D:= open_ball (point_set X) d xL r0.
+have HopenD: open D
+  by apply: open_ball_is_open.
+case: (Lim D).
 (* assumption. (* <-DOESN'T WORK-*)*)
-  + rewrite /=. (** THIS simpl REVEALS THIS open D ISN'T THAT open D**)
+- rewrite /=. (** THIS simpl REVEALS THIS open D ISN'T THAT open D**)
 (*apply B_open_intro.*)
-    set F := Singleton D.
-    have ->: D = FamilyUnion F.
-    * apply: Extensionality_Ensembles; split; last by move => ? [? ?] [].
-      move => x1 H0.
-      by exists D.
-    constructor.
-    move=> x1 [].
-    by exists xL.
-  + constructor.
-    by rewrite metric_zero.
-  + rewrite /= => x1 H0.
-    have nn_Vnn: forall n:nat, 
-        snd (Fn n) = n /\ Included (open_ball (point_set X) d (x_n n) (2*(r_n n))) (V n).
-    * elim=> [| n [Hn_n _]].
-      - rewrite H_0 x_n_0 r_n_0; split => //.
-        rewrite (_ : 2 * r0 = r0_t); last by rewrite /r0; field.
-        move => z InObz.
-        have: In (Intersection (V 0%nat) U) z by apply: Inc_ball_V0U.
+  set F := Singleton D.
+  have ->: D = FamilyUnion F.
+  { apply: Extensionality_Ensembles; split; last by move => ? [? ?] [].
+    move => x1 H0.
+    by exists D.
+  }
+  constructor.
+  move=> x1 [].
+  by exists xL.
+- constructor.
+  by rewrite metric_zero.
+- rewrite /= => x1 H0.
+  have nn_Vnn: forall n:nat, 
+      snd (Fn n) = n /\ Included (open_ball (point_set X) d (x_n n) (2*(r_n n))) (V n).
+  { elim=> [| n [Hn_n _]].
+    - rewrite H_0 x_n_0 r_n_0; split => //.
+      rewrite (_ : 2 * r0 = r0_t); last by rewrite /r0; field.
+      move => z InObz.
+      have: In (Intersection (V 0%nat) U) z by apply: Inc_ball_V0U.
         by case.
-      - case: (H_n n) => Hn_Sn [_ [_ Hn_V]].
-        split; first by rewrite Hn_Sn Hn_n.
-        by rewrite Hn_Sn Hn_n in Hn_V.
+    - case: (H_n n) => Hn_Sn [_ [_ Hn_V]].
+      split; first by rewrite Hn_Sn Hn_n.
+      by rewrite Hn_Sn Hn_n in Hn_V.
+  }
 (************************************)
-    exists xL.
-    split.
-    * constructor => n.
-      set D_n:= open_ball (point_set X) d xL (r_n n).
-      case: (Lim D_n).
-      - set F_n := Singleton D_n.
-        have ->: D_n = FamilyUnion F_n.
-        + apply: Extensionality_Ensembles; split; last by move => ? [? ?] [].
-          move => x2 H1.
-          by exists D_n.
-        constructor => x2 [].
-        by exists xL.
-      - constructor.
-        rewrite metric_zero => //.
-        exact: Rgt_lt.
-      - rewrite /= => x2 H1.
-        set n1 := max x2 n.
-        have [d_xL_xn1]: In D_n (x_n n1).
-        + apply: H1.
-          by apply: Max.le_max_l.
-        set k1:= (n1 - n)%nat.
-        have le_0_k1: le 0%nat k1.
-        + rewrite (_: (0 = n - n)%nat); last by auto with *. 
-          apply: minus_le_compat_r.
-          by apply: Max.le_max_r.
-          have d_xn_xn1: d (x_n n) (x_n n1) <= r_n n.
-          * rewrite (_: n1 = (n + k1)%nat);
-              last by apply: le_plus_minus; apply: Max.le_max_r.
-            apply: Rle_trans (_ : r_n n * (1 - (/ 2) ^ k1) <= _) => //.
-            rewrite -[x in _ <= x]Rmult_1_r.
-            apply: Rmult_le_compat_l; first by apply: Rlt_le; apply: Rgt_lt.
-            apply: Rle_move_pr2ml.
-            rewrite -[x in x <= _]Rplus_0_r.
-            apply: Rplus_le_compat_l.
-            apply: Rlt_le.
-            by auto with real.
-          case: (nn_Vnn n) => _ bVn.
-          apply: bVn.
-          constructor.
-          apply: Rle_lt_trans (_ : d (x_n n) (x_n n1) + d (x_n n1) xL < _);
-            first by apply: triangle_inequality.
-          rewrite [d (x_n n1) xL]metric_sym //.
-          rewrite (_ : 2 * r_n n = r_n n + r_n n); last by field.
-          exact: Rplus_le_lt_compat.
-(*****************************)
-    * set n2 := x1.
-      case: (H0 n2); first by auto.
-      move=> H1.
-      case: (Inc_ball_V0U xL) => //.
-      constructor.
-      have H3: d (x_n n2) (x_n 0%nat) <= r_n 0%nat.
-      - rewrite metric_sym //.
-        move: (x_n_x_nk 0%nat n2).
-        rewrite /= => H2.
-        apply: Rle_trans (_ : r_n 0%nat * (1 - (/ 2) ^ n2) <= _) => //.
+  exists xL.
+  split.
+  + constructor => n.
+    set D_n:= open_ball (point_set X) d xL (r_n n).
+    case: (Lim D_n).
+    * set F_n := Singleton D_n.
+      have ->: D_n = FamilyUnion F_n.
+      { apply: Extensionality_Ensembles; split; last by move => ? [? ?] [].
+        move => x2 H1.
+        by exists D_n.
+      }
+      constructor => x2 [].
+      by exists xL.
+    * constructor.
+      rewrite metric_zero => //.
+      exact: Rgt_lt.
+    * rewrite /= => x2 H1.
+      set n1 := max x2 n.
+      have [d_xL_xn1]: In D_n (x_n n1).
+      { apply: H1.
+        by apply: Max.le_max_l.
+      }
+      set k1:= (n1 - n)%nat.
+      have le_0_k1: le 0%nat k1.
+      { rewrite (_: (0 = n - n)%nat); last by auto with *. 
+        apply: minus_le_compat_r.
+        by apply: Max.le_max_r.
+      }
+      have d_xn_xn1: d (x_n n) (x_n n1) <= r_n n.
+      { rewrite (_: n1 = (n + k1)%nat);
+          last by apply: le_plus_minus; apply: Max.le_max_r.
+        apply: Rle_trans (_ : r_n n * (1 - (/ 2) ^ k1) <= _) => //.
         rewrite -[x in _ <= x]Rmult_1_r.
         apply: Rmult_le_compat_l; first by apply: Rlt_le; apply: Rgt_lt.
         apply: Rle_move_pr2ml.
@@ -530,12 +519,40 @@ set rp0 := exist (fun r:R => r>0)r0 r0_pos.
         apply: Rplus_le_compat_l.
         apply: Rlt_le.
         by auto with real.
-      rewrite r_n_0 x_n_0 in H3.
-      rewrite metric_sym //.
-      apply: Rle_lt_trans (_ : d xL (x_n n2) + d (x_n n2) x0 < _);
+      }
+      case: (nn_Vnn n) => _ bVn.
+      apply: bVn.
+      constructor.
+      apply: Rle_lt_trans (_ : d (x_n n) (x_n n1) + d (x_n n1) xL < _);
         first by apply: triangle_inequality.
-      rewrite (_ : r0_t =  r0_t / 2 + r0_t / 2); last by field.
-      exact: Rplus_lt_le_compat.
+      rewrite [d (x_n n1) xL]metric_sym //.
+      rewrite (_ : 2 * r_n n = r_n n + r_n n); last by field.
+      exact: Rplus_le_lt_compat.
+(*****************************)
+  + set n2 := x1.
+    case: (H0 n2); first by auto.
+    move=> H1.
+    case: (Inc_ball_V0U xL) => //.
+    constructor.
+    have H3: d (x_n n2) (x_n 0%nat) <= r_n 0%nat.
+    { rewrite metric_sym //.
+      move: (x_n_x_nk 0%nat n2).
+      rewrite /= => H2.
+      apply: Rle_trans (_ : r_n 0%nat * (1 - (/ 2) ^ n2) <= _) => //.
+      rewrite -[x in _ <= x]Rmult_1_r.
+      apply: Rmult_le_compat_l; first by apply: Rlt_le; apply: Rgt_lt.
+      apply: Rle_move_pr2ml.
+      rewrite -[x in x <= _]Rplus_0_r.
+      apply: Rplus_le_compat_l.
+      apply: Rlt_le.
+      by auto with real.
+    }
+    rewrite r_n_0 x_n_0 in H3.
+    rewrite metric_sym //.
+    apply: Rle_lt_trans (_ : d xL (x_n n2) + d (x_n n2) x0 < _);
+      first by apply: triangle_inequality.
+    rewrite (_ : r0_t =  r0_t / 2 + r0_t / 2); last by field.
+    exact: Rplus_lt_le_compat.
 Qed. (* BaireCategoryTheorem *)
 
 End BaireSpaces.
