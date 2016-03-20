@@ -23,7 +23,11 @@ Section BaireSpaces.
 Variable X : TopologicalSpace.
 
 (* We use the the following form of the Axiom of Choice *)
-Axiom FDC : FunctionalDependentChoice_on (point_set X * { r:R | r > 0} * nat).
+Lemma FDC : FunctionalDependentChoice_on (point_set X * { r:R | r > 0} * nat).
+Proof.
+  apply: functional_choice_imp_functional_dependent_choice.
+  exact: choice.
+Qed.
 
 (* Definition of Baire Spaces *)
 Definition baire_space : Prop :=
