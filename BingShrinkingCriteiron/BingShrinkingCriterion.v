@@ -146,7 +146,7 @@ case: (lim_x (open_ball T dt x eps)).
   suff: dt (xn n0) x < r + eps
     by apply: Rge_not_lt; rewrite /eps; fourier.
   set m0 := max x0 n0.  
-  apply: Rle_lt_trans (_ : _ <= (dt (xn n0) (xn m0) + dt (xn m0) x)) _;
+  apply: Rle_lt_trans (_ : (dt (xn n0) (xn m0) + dt (xn m0) x) < _);
     first by apply: triangle_inequality.
   apply: Rplus_le_lt_compat (dtxn0n _ _) _; first by apply: Max.le_max_r.
   case: (H0 m0); first by apply: Max.le_max_l.
@@ -200,7 +200,7 @@ reflexivity.
 (* Ssreflect-style proof.  But this makes the term bigger.
 - case: Hf => [[mf Hf] _]; case: Hg => [[mg Hg] _].
   exists (mf + mg) => _ [x _ _ ->].
-  apply: Rle_trans (_ : _ <= d' (f0 x) (y0 x)  + d' (y0 x) (g0 x)) _;
+  apply: Rle_trans (_ : d' (f0 x) (y0 x)  + d' (y0 x) (g0 x) <= _);
     first by apply: triangle_inequality.
   rewrite (metric_sym _ _ d'_metric).
   apply: Rplus_le_compat.
@@ -217,7 +217,7 @@ constructor.
 - move=> [f0 Hf] [g0 Hg] /=.
   case: X_inhabited => [x0] /=.
   case: sup => /= x [Hxub Hxleast].
-  apply: Rge_trans (_ : _ >= d' (f0 x0) (g0 x0)) _; last by case: d'_metric.
+  apply: Rge_trans (_ : d' (f0 x0) (g0 x0) >= _); last by case: d'_metric.
   apply: Rle_ge.
   apply: Hxub.
   by exists x0.
@@ -236,7 +236,7 @@ constructor.
   case: sup => /= y [Hyub Hyleast].
   case: sup => /= z [Hzub Hzleast].
   apply: Hxleast => _ [x2 _ _ ->].
-  apply: Rle_trans (_ : _ <= d' (f0 x2) (g0 x2) + d' (g0 x2) (h0 x2)) _;
+  apply: Rle_trans (_ : d' (f0 x2) (g0 x2) + d' (g0 x2) (h0 x2) <= _);
     first by case: d'_metric.
   apply: Rplus_le_compat.
   + by apply: Hyub; exists x2.
@@ -299,7 +299,7 @@ have cauchy_yn: forall x:X, cauchy d' (yn x).
   case: (cauchy_fn _ pos_eps) => [N cau_fn].
   exists N.
   move=> m n hm hn.
-  apply: Rle_lt_trans (Rle_d'_um _ _ _) _.
+  apply: Rle_lt_trans (_ : um (fn m) (fn n) < _); first by apply: Rle_d'_um.
   by apply: cau_fn.
 pose choice_R (x:X) (y:Y): Prop := net_limit (yn x) y. 
 have choice_f0: forall x:X, exists y:Y, (choice_R x y)
@@ -311,8 +311,8 @@ have Bf0: bound (Im Full_set (fun x:X=> d' (y0 x) (f0 x))).
   move=> n0 Bd1.
   case: (proj2_sig (fn n0)) => [[ub Bfn0] _].
   exists (ub+1) => _ [x _ _ ->].
-  apply: Rle_trans (_ : _ <= (d' (y0 x) (proj1_sig (fn n0) x)
-                              + d' (proj1_sig (fn n0) x) (f0 x))) _;
+  apply: Rle_trans (_ : d' (y0 x) (proj1_sig (fn n0) x)
+                        + d' (proj1_sig (fn n0) x) (f0 x) <= _);
     first by apply: triangle_inequality.
   apply: Rplus_le_compat.
   + apply: (Bfn0 (d' (y0 x) (proj1_sig (fn n0) x))).
@@ -320,7 +320,8 @@ have Bf0: bound (Im Full_set (fun x:X=> d' (y0 x) (f0 x))).
   + have d'um1: forall n:nat, (n >= n0)%nat ->
       d' (proj1_sig (fn n0) x) (proj1_sig (fn n) x) < 1.
     * move=> n hn.
-      apply: Rle_lt_trans (Rle_d'_um _ _ _) _.
+      apply: Rle_lt_trans (_ : um (fn n0) (fn n) < _);
+        first by apply: Rle_d'_um.
       by apply: Bd1.
     apply: Rnot_lt_le => Fh.
     set ep := d' (proj1_sig (fn n0) x) (f0 x) - 1.
@@ -337,12 +338,12 @@ have Bf0: bound (Im Full_set (fun x:X=> d' (y0 x) (f0 x))).
       apply: Rle_not_gt.
       rewrite metric_sym //.
       apply: Rle_move_pr2ml.
-      apply: Rle_trans (_ : _ <= d' (proj1_sig (fn n0) x) (yn x m0)
-                                 + d' (yn x m0) (f0 x)) _;
+      apply: Rle_trans (_ : d' (proj1_sig (fn n0) x) (yn x m0)
+                            + d' (yn x m0) (f0 x) <= _);
         first by apply: triangle_inequality.
       apply: Rlt_le.
-      apply: Rlt_le_trans (Rplus_lt_compat_r _ _ _ H3) _.
-      auto with real.
+      rewrite Rplus_comm.
+      exact: Rplus_lt_compat_l.
 have Cf0: @continuous Xt Yt f0.
 - apply: pointwise_continuity => /= x.
   apply: (metric_space_fun_continuity Xt Yt _ _ d d').
@@ -366,13 +367,13 @@ have Cf0: @continuous Xt Yt f0.
         have f0ynx1 : d' (f0 x0) (yn x0 N1) < de
           by case: (H1 N1) => //; by apply: Max.le_max_r.
         have ynNynN1 : d' (yn x0 N1) (yn x0 N) < /4 * eps
-          by apply: Rle_lt_trans (Rle_d'_um _ _ _) _; apply: H => //;
-             apply: Max.le_max_l.
+          by apply: Rle_lt_trans (_ : um (fn N1) (fn N) < _);
+             [apply: Rle_d'_um | apply: H => //; apply: Max.le_max_l].
         have: d' (f0 x0) (yn x0 N) < de + /4 * eps.
-        + apply: Rle_lt_trans (_ : _ <= (d' (f0 x0) (yn x0 N1)
-                                         + d' (yn x0 N1) (yn x0 N))) _;
+        + apply: Rle_lt_trans (_ : d' (f0 x0) (yn x0 N1)
+                                   + d' (yn x0 N1) (yn x0 N) < _);
             first by apply: triangle_inequality.
-            by apply: Rplus_lt_compat.
+          exact: Rplus_lt_compat.
         apply: Rge_not_lt.
         rewrite /de /yn.
         by fourier.
@@ -384,18 +385,16 @@ have Cf0: @continuous Xt Yt f0.
     case/(_ (/2 * eps)); first by fourier.
     move=> delta [delta_pos HC].
     exists delta; split => // x' dxx'_le_delta.
-    apply: Rle_lt_trans (_ : _ <= (d' (f0 x) (proj1_sig (fn N) x') 
-                                   + d'(proj1_sig (fn N) x') (f0 x'))) _;
-      first by apply: triangle_inequality.
-    apply: Rle_lt_trans
-             (Rplus_le_compat_r _ _ _
-                (_ : _ <= (d' (f0 x) (proj1_sig (fn N) x) 
-                           + d' (proj1_sig (fn N) x) (proj1_sig (fn N) x')))) _;
+    rewrite [x in _ < x](_ : eps = /4*eps + /2*eps + /4*eps); last by field.
+    apply: Rle_lt_trans (_ : d' (f0 x) (proj1_sig (fn N) x') 
+                             + d'(proj1_sig (fn N) x') (f0 x') < _);
       first by apply: triangle_inequality.
     rewrite [d' _ (f0 x')]metric_sym //.
-    apply: Rle_lt_trans (Rplus_le_compat_l _ _ _ (f0fN _)) _.
-    rewrite [x in _ < x](_ : eps = /4*eps + /2*eps + /4*eps); last by field.
-    apply: Rplus_lt_compat_r.
+    apply: Rplus_lt_le_compat => //.
+    apply: Rle_lt_trans
+             (_ : d' (f0 x) (proj1_sig (fn N) x) 
+                  + d' (proj1_sig (fn N) x) (proj1_sig (fn N) x') < _);
+      first by apply: triangle_inequality.
     apply: Rplus_le_lt_compat => //.
     by apply: HC.
 exists (exist (fun g:X->Y => bound (Im Full_set
@@ -407,14 +406,14 @@ move=> eps eps_pos.
 case: (cauchy_fn (/2*eps)); first by fourier.
 move=> i0 H.
 exists i0 => j i0j.
-apply: Rle_lt_trans (_ : _ <= (/2*eps)) _.
+apply: Rle_lt_trans (_ : /2*eps < _).
 - apply: Rle_um_all_d'; first by fourier.
   move=> x /=.
   rewrite -[proj1_sig (fn j) x]/((yn x) j).
   rewrite metric_sym //.
   rewrite /= in i0j.
   apply: (lim_range Y d' d'_metric (f0 x) (yn x) (/2*eps) j) => n le_j_n.
-  + apply: Rle_trans (Rle_d'_um _ _ _) _.
+  + apply: Rle_trans (_ : um (fn j) (fn n) <= _); first by apply: Rle_d'_um.
     apply: Rlt_le.
     apply: H.
     by auto.
@@ -449,14 +448,14 @@ exists eps; split => //.
   rewrite /R_metric /g.
   apply: Rabs_def1. 
   + apply: Rlt_move_pr2ml.
-    apply: Rle_lt_trans (_ : _ <= d' Y0 y + d' y y') _;
+    apply: Rle_lt_trans (_ : d' Y0 y + d' y y' < _);
       first by apply: triangle_inequality.
     rewrite Rplus_comm.
     exact: Rplus_lt_compat_r.
   + apply: Rlt_move_pl2mr.
     rewrite Rplus_comm.
     apply: Rlt_move_mr2pl.
-    apply: Rle_lt_trans (_ : _ <= d' Y0 y' + d' y' y) _;
+    apply: Rle_lt_trans (_ : d' Y0 y' + d' y' y < _);
       first by apply: triangle_inequality.
     apply: Rplus_lt_compat_l.
     by rewrite metric_sym // Ropp_involutive.
@@ -528,7 +527,7 @@ have [abcgn Habcgn]: exists Ak: nat -> X * X * Y * CMap,
   exists (ak, bk, (proj1_sig (gn (max nr k)) ak), (gn (max nr k))).
   repeat split=> //.
   case: (Hgn (max nr k)) => _ H0.
-  apply: Rlt_le_trans H0 _.
+  apply: Rlt_le_trans (_ : / INR (S (Init.Nat.max nr k)) <= _) => //.
   apply: Rle_inv_INR_S_contravar.
   exact: Max.le_max_r.
 pose a_net:Net nat_DS Xt:= (fun (n:nat) => fst (fst (fst (abcgn n)))).
@@ -562,7 +561,7 @@ have [Nab H_Nab]: exists Nab : nat -> nat, forall n, ab_cond n (Nab n).
     auto with *.
   + move=> x [H [H0]].
     exists x; repeat split => //.
-    apply: Rlt_le_trans (_ : _ < /INR (S x)) _; first by case: (H_Na x).
+    apply: Rlt_le_trans (_ : /INR (S x) <= _); first by case: (H_Na x).
     exact: Rle_inv_INR_S_contravar.
 (*******************)
 pose aN (n:nat):X :=  a_net (Na (Nab n)).
@@ -578,14 +577,14 @@ have daNbN_r : forall n:nat, d (aN n) (bN n) >= r
   by move=> n; case: (Habcgn (Na (Nab n))) => _ [_ []].
 have umfrgN : forall n:nat, um fr (gN n) < / INR (S n).
 - move=> n.
-  apply: Rlt_le_trans (_ : _ < / INR (S (Na (Nab n)))) _;
+  apply: Rlt_le_trans (_ : / INR (S (Na (Nab n))) <= _);
     first by case: (Habcgn (Na (Nab n))) => _ [_ []].
   apply: Rle_inv_INR_S_contravar.
-  apply: le_trans (_ : (_ <= Nab n)%nat) _; first by case: (H_Nab n).
+  apply: le_trans (_ : (Nab n <= _)%nat); first by case: (H_Nab n).
   by case: (H_Na (Nab n)).
 have dlimaaN: forall n:nat, d lim_a (aN n) < / INR (S n).
 - move=> n.
-  apply: Rlt_le_trans (_ : _ < / INR (S (Nab n))) _;
+  apply: Rlt_le_trans (_ : / INR (S (Nab n)) <= _);
     first by case: (H_Na (Nab n)).
   apply: Rle_inv_INR_S_contravar.
   by case: (H_Nab n).
@@ -630,46 +629,47 @@ have frab: (proj1_sig fr lim_a) = (proj1_sig fr lim_b).
   have: d' (proj1_sig fr lim_a) (proj1_sig fr lim_b) <
         /4*eps + /4*eps + /4*eps + /4*eps.
   + apply: Rle_lt_trans
-             (_ : _ <= (d' (proj1_sig fr lim_a) (proj1_sig fr (bN N)) + 
-                        d' (proj1_sig fr (bN N)) (proj1_sig fr lim_b))) _;
+             (_ : d' (proj1_sig fr lim_a) (proj1_sig fr (bN N))
+                  + d' (proj1_sig fr (bN N)) (proj1_sig fr lim_b) < _);
       first by apply: triangle_inequality.
     apply: Rplus_lt_compat; last first.
     * rewrite metric_sym //.
       apply: fr_conti_b.
-      apply: Rlt_le_trans (_ : _ < del) (Rmin_r _ _).
-      apply: Rlt_le_trans (_ : _ < Rmin (/4*eps) del) (Rmin_r _ _).
-      apply: Rlt_trans _ N_large.
-      exact: Rlt_trans (dlimbbN _) _.
+      apply: Rlt_le_trans (_ : del <= _); last by apply: Rmin_r.
+      apply: Rlt_le_trans (_ : Rmin (/4*eps) del <= _ ); last by apply: Rmin_r.
+      apply: Rlt_trans (_ : / INR N < _) => //.
+      exact: Rlt_trans (_ : / INR (S N) < _).
     apply: Rle_lt_trans
-           (_ : _ <= (d' (proj1_sig fr lim_a) (proj1_sig (gN N) (bN N)) + 
-                      d' (proj1_sig (gN N) (bN N)) (proj1_sig fr (bN N)))) _;
+             (_ : d' (proj1_sig fr lim_a) (proj1_sig (gN N) (bN N)) + 
+                  d' (proj1_sig (gN N) (bN N)) (proj1_sig fr (bN N)) < _);
       first by apply: triangle_inequality.
     apply: Rplus_lt_compat; last first.
     * rewrite metric_sym //.
-      apply: Rle_lt_trans (Rle_d'_um _ _ _) _.
-      apply: Rlt_trans (umfrgN _) _.
-      apply: Rlt_trans HinvN _.
-      exact: Rlt_le_trans N_large (Rmin_l _ _).
+      apply: Rle_lt_trans (_ : um fr (gN N) < _); first by apply: Rle_d'_um.
+      apply: Rlt_trans (_ : / INR (S N) < _) => //.
+      apply: Rlt_trans (_ : / INR N < _) => //.
+      apply: Rlt_le_trans (_ : Rmin (/ 4 * eps) del <= _) => //.
+      exact: Rmin_l.
     apply: Rle_lt_trans
-             (_ : _ <= d' (proj1_sig fr lim_a) (proj1_sig (gN N) (aN N)) +
-                       d' (proj1_sig (gN N) (aN N)) (proj1_sig (gN N) (bN N))) _;
+             (_ : d' (proj1_sig fr lim_a) (proj1_sig (gN N) (aN N)) +
+                  d' (proj1_sig (gN N) (aN N)) (proj1_sig (gN N) (bN N)) < _);
       first by apply: triangle_inequality.
     rewrite gNaN_cN gNbN_cN metric_zero // Rplus_0_r.
-    apply: Rle_lt_trans
-             (_ : _ <= d' (proj1_sig fr lim_a) (proj1_sig fr (aN N)) +
-                       d' (proj1_sig fr (aN N)) (cN N)) _;
+    apply: Rle_lt_trans (_ : d' (proj1_sig fr lim_a) (proj1_sig fr (aN N)) +
+                             d' (proj1_sig fr (aN N)) (cN N) < _);
       first by apply: triangle_inequality.
     apply: Rplus_lt_compat.
     * apply: fr_conti_a.
-      apply: Rlt_le_trans (_ : _ < del) (Rmin_l _ _).
-      apply: Rlt_le_trans (_ : _ < Rmin (/4*eps) del) (Rmin_r _ _).
-      apply: Rlt_trans _ N_large.
-      exact: Rlt_trans (dlimaaN _) _.
+      apply: Rlt_le_trans (_ : del <= _); last by apply: Rmin_l.
+      apply: Rlt_le_trans (_ : Rmin (/4*eps) del <= _ ); last by apply: Rmin_r.
+      apply: Rlt_trans (_ : / INR N < _) => //.
+      exact: Rlt_trans (_ : / INR (S N) < _).
     * rewrite -gNaN_cN.
-      apply: Rle_lt_trans (Rle_d'_um _ _ _) _.
-      apply: Rlt_trans (umfrgN _) _.
-      apply: Rlt_trans HinvN _.
-      exact: Rlt_le_trans N_large (Rmin_l _ _).
+      apply: Rle_lt_trans (_ : um fr (gN N) < _); first by apply: Rle_d'_um.
+      apply: Rlt_trans (_ : / INR (S N) < _) => //.
+      apply: Rlt_trans (_ : / INR N < _) => //.
+      apply: Rlt_le_trans (_ : Rmin (/ 4 * eps) del <= _) => //.
+      exact: Rmin_l.
   rewrite [x in _ < x](_ : _ = eps); last by field.
   exact: Rlt_irrefl.
 have dlimalimb_r: d lim_a lim_b < r
@@ -681,19 +681,18 @@ have [N [N_pos INR_e2]]: exists N:nat, (N > 0)%nat /\ / INR N < /2 * eps2.
   by apply: RationalsInReals.inverses_of_nats_approach_0; fourier.
 apply: Rlt_not_ge (daNbN_r N).
 have HinvSN: / INR (S N) < /2 * eps2.
-- apply: Rlt_trans INR_e2.
+- apply: Rlt_trans (_ : / INR N < _) => //.
   apply: Rinv_lt_contravar.
   apply: Rmult_lt_0_compat; auto with *.
   exact: lt_INR.
 rewrite (_ : r = /2 * eps2 + ((r - eps2) + /2 * eps2)); last by field.
-apply: Rle_lt_trans (_ : _ <= d (aN N) lim_a + d lim_a (bN N)) _;
+apply: Rle_lt_trans (_ : d (aN N) lim_a + d lim_a (bN N) < _);
   first by apply: triangle_inequality.
 apply: Rplus_lt_compat;
-  first by rewrite (metric_sym _ d) //; exact: Rlt_trans (dlimaaN _) HinvSN.
-apply: Rle_lt_trans (_ : _ <= d lim_a lim_b + d lim_b (bN N)) _;
+  first by rewrite (metric_sym _ d) //; apply: Rlt_trans (_ : / INR (S N) < _).
+apply: Rle_lt_trans (_ : d lim_a lim_b + d lim_b (bN N) < _);
   first by apply: triangle_inequality.
-apply: Rplus_le_lt_compat;
-  last by exact: Rlt_trans (dlimbbN _) HinvSN.
+apply: Rplus_le_lt_compat; last by apply: Rlt_trans (_ : / INR (S N) < _).
 by rewrite /eps2; fourier.
 Qed. (*** W_is_open is defined ***)
 
@@ -860,7 +859,8 @@ have WnOD: forall n:nat, open (Wn n) /\ dense (Wn n).
   + constructor => x1 x2 fk'hx1_fk'hx2.
     rewrite /= /fk'h in fk'hx1_fk'hx2.
     have: d (k (k'h x1)) (k (k'h x2)) < delta
-      by apply: Rlt_le_trans (h2_k _ _ _) (Rmin_l _ _).
+      by apply: Rlt_le_trans (_ : Rmin delta (r * / 2) <= _);
+         [apply: h2_k | apply: Rmin_l].
     rewrite /k'h !h_kk' => /h_delta.
     rewrite !h_h'h0 => /Rlt_le_trans.
     apply.
@@ -870,17 +870,16 @@ have WnOD: forall n:nat, open (Wn n) /\ dense (Wn n).
     rewrite /fk'hPP /=.
     apply: IcOB_V.
     constructor.
-    apply: Rle_lt_trans (_ : _ <= um (proj1_sig gPP) fh0 + um fh0 fk'hP) _;
+    apply: Rle_lt_trans (_ : um (proj1_sig gPP) fh0 + um fh0 fk'hP < _);
       first by apply: triangle_inequality; by apply: um_metric.
-    apply: Rlt_le_trans (_ : _ < r * /2 + um fh0 fk'hP) _;
-      first by apply: Rplus_lt_compat_r.
-    rewrite [x in _ <= x](_ : r = r * /2 + r* /2); last by field.
-    apply: Rplus_le_compat_l.
+    rewrite (_ : r = r * /2 + r* /2); last by field.
+    apply: Rplus_lt_le_compat => //.
     apply: Rle_um_all_d'; first by fourier.
     move=> x.
     rewrite h_fh0 /= /fk'h /k'h -[X in d' (f X)]h_kk' metric_sym //.
     apply: Rlt_le.
-    exact: Rlt_le_trans (h1_k _) (Rmin_r _ _).
+    apply: Rlt_le_trans (_ : Rmin delta (r * / 2) <= _); first by apply: h1_k.
+    exact: Rmin_r.
 have IWn_dense: dense (IndexedIntersection Wn)
   by apply: CfHt_baire; apply: WnOD.
 have InCfHfP: In CfH fP.
@@ -920,7 +919,7 @@ apply: bij_conti_is_homeo_for_compact_Hausdorff_spaces => //.
     case: (Wn_h n).
     rewrite /W /In /subspace_inc -/hP -/h => h_Wn.
     apply: Rlt_le.
-    apply: Rlt_trans (_ : _ < / INR (S n)) _; first by apply: h_Wn.
+    apply: Rlt_trans (_ : / INR (S n) < _); first by apply: h_Wn.
     apply: Rinv_lt_contravar.
     apply: Rmult_lt_0_compat; auto with *.
     exact: lt_INR.
@@ -966,7 +965,7 @@ apply: bij_conti_is_homeo_for_compact_Hausdorff_spaces => //.
     have InObyr_hx1: In (open_ball (point_set Yt) d' y r) (h x1).
     * constructor.
       rewrite /h y_fh1x1 -fh1_f_h1 metric_sym //.
-      apply: Rle_lt_trans _ umhPfh1_r.
+      apply: Rle_lt_trans (_ : um hP fh1 < _) => //.
       exact: Rle_d'_um.
     have: In (Complement (Im Full_set h)) (h x1)
       by apply: IncObCImh.
@@ -974,7 +973,7 @@ apply: bij_conti_is_homeo_for_compact_Hausdorff_spaces => //.
     by exists x1.
 - move=> x.
   rewrite -[f]/(proj1_sig fP) /h.
-  apply: Rle_lt_trans _ umfh.
+  apply: Rle_lt_trans (_ : um fP hP < _) => //.
   exact: Rle_d'_um.
 Qed. (*  Bing_Shrinking_Theorem *)
 
