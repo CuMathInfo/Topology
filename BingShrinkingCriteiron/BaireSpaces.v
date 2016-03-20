@@ -235,8 +235,8 @@ Proof.
 move=> x r H_r_pos.
 have H_In_MTOB_oball:
   In (metric_topology_neighborhood_basis d x)
-     (open_ball (point_set X) d x r) 
-  by apply: intro_open_ball.
+     (open_ball (point_set X) d x r)
+  by constructor.
 have: open_neighborhood (open_ball (point_set X) d x r) x.
   by apply: (open_neighborhood_basis_elements (metric_topology_neighborhood_basis d x) x).
 by case.
@@ -275,7 +275,7 @@ suff ->: Complement (closed_ball x0 r0) = IndexedUnion cover.
   exact: (proj2_sig xd).
 - apply: Extensionality_Ensembles; split.
   + move=> x /Rnot_le_gt dx0x_gt_r0.
-    apply: (indexed_union_intro _ (exist _ x dx0x_gt_r0)).
+    exists (exist _ x dx0x_gt_r0).
     constructor => //=.
     rewrite metric_zero //.
     exact: Rgt_minus.
@@ -305,9 +305,9 @@ set (IStep (xrn0 xrn1: point_set X * { r:R | r > 0} * nat) :=
     (open_ball _ d (fst (fst xrn1)) (2*proj1_sig (snd (fst xrn1))))
     (V (snd xrn1))).
 (* step 0 *) 
-have [x0] : Inhabited (Intersection (V 0%nat) U)
+have [x0] : Inhabited (Intersection (V 0%nat) U).
   by apply: dense_meets_every_nonempty_open => //;
-     [by case: (H_od 0%nat) | exact: Inhabited_intro H_In_U_x].
+     [case: (H_od 0%nat) | exists x].
 case/open_ball_in_open_set;
   first by apply: open_intersection2 => //; case (H_od 0%nat).
 move=> r0_t [r0_t_pos Inc_ball_V0U].
@@ -450,10 +450,10 @@ set rp0 := exist (fun r:R => r>0)r0 r0_pos.
     have ->: D = FamilyUnion F.
     * apply: Extensionality_Ensembles; split; last by move => ? [? ?] [].
       move => x1 H0.
-      by apply: (family_union_intro _ D).
-    apply: B_open_intro.
+      by exists D.
+    constructor.
     move=> x1 [].
-    exact: (indexed_union_intro _ xL).
+    by exists xL.
   + constructor.
     by rewrite metric_zero.
   + rewrite /= => x1 H0.
@@ -469,19 +469,18 @@ set rp0 := exist (fun r:R => r>0)r0 r0_pos.
         split; first by rewrite Hn_Sn Hn_n.
         by rewrite Hn_Sn Hn_n in Hn_V.
 (************************************)
-    apply: (Inhabited_intro _ _ xL).
+    exists xL.
     split.
-    * apply: indexed_intersection_intro => n.
+    * constructor => n.
       set D_n:= open_ball (point_set X) d xL (r_n n).
       case: (Lim D_n).
       - set F_n := Singleton D_n.
         have ->: D_n = FamilyUnion F_n.
         + apply: Extensionality_Ensembles; split; last by move => ? [? ?] [].
           move => x2 H1.
-          by apply: (family_union_intro _ D_n).
-        apply: B_open_intro.
-        move=> x2 [].
-        exact: (indexed_union_intro _ xL).
+          by exists D_n.
+        constructor => x2 [].
+        by exists xL.
       - constructor.
         rewrite metric_zero => //.
         exact: Rgt_lt.

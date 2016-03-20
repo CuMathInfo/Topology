@@ -133,7 +133,7 @@ Lemma id_map_homeomorphism :
   forall XT:TopologicalSpace, homeomorphism (id_map XT).
 Proof.
 move=>XT.
-by apply: (intro_homeomorphism _ (id_map XT)) => //; apply: id_map_continuous.
+by exists (id_map XT) => //; apply: id_map_continuous.
 Qed.
 
 Variable T:Type.
@@ -156,7 +156,7 @@ Proof.
 apply: T3_sep_impl_Hausdorff.
 apply: normal_sep_impl_T3_sep.
 apply: metrizable_impl_normal_sep.
-apply: (intro_metrizable Tt dt) => //.
+exists dt => //.
 exact: MetricTopology_metrizable.
 Qed.
 
