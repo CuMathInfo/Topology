@@ -754,109 +754,43 @@ compact Xt -> compact Yt -> Hausdorff Xt -> Hausdorff Yt ->
 forall f: point_set Xt -> point_set Yt,
  bijective f -> continuous f -> homeomorphism f.
 Proof.
-move=> Xt_compact Yt_compact Xt_Hdf Yt_Hdf. 
-move=> f f_bijective f_continuous.
-apply invertible_open_map_is_homeomorphism.
-apply bijective_impl_invertible.
-assumption.
-assumption.
-red.
-move => U U_open.
-apply closed_complement_open.
-apply compact_closed.
-by apply Yt_Hdf.
+move=> Xt_compact Yt_compact Xt_Hdf Yt_Hdf f f_bijective f_continuous.
+apply: invertible_open_map_is_homeomorphism => //;
+  first by apply: bijective_impl_invertible.
+move=> U U_open.
+apply: closed_complement_open => //.
+apply: compact_closed => //.
 have CImUf: forall xP : {x: point_set Xt | In (Complement U) x},
-  Complement (Im U f) (f (proj1_sig xP)).
-move=>xP.
-destruct xP.
-simpl.
-red in i.
-red in i.
-red.
-move=> InImUffx.
-destruct i.
-set y:= f x.
-rewrite-/y in  InImUffx.
-have yfx0: exists x0: point_set Xt, In U x0 /\ y = f x0.
-destruct InImUffx.
-exists x0.
-split.
-assumption.
-assumption.
-destruct yfx0.
-destruct H.
-destruct f_bijective.
-by have ->: x=x0 by exact: H1.
-
+    Complement (Im U f) (f (proj1_sig xP)).
+- move=> [x Hx].
+  rewrite bijection_complement //.
+  by exists x.
 pose (fP:=fun xP: {x:point_set Xt | In (Complement U) x} =>
   (exist (Complement (Im U f)) (f (proj1_sig xP)) (CImUf xP)  )).
-
-apply (@compact_image 
-        (SubspaceTopology (Complement U))
-        (SubspaceTopology (Complement (Im U f)))
-        fP). 
-
-apply closed_compact.
-apply Xt_compact.
-red.
-by rewrite Complement_Complement.
-red.
-move=> V V_open.
-have WinY: exists W:Ensemble (point_set Yt),
-  open W /\ V = inverse_image (@subspace_inc Yt (Complement (Im U f))) W.
-apply subspace_topology_topology.
-assumption.
-destruct WinY as [W' [W'_open V_inv_W']]. 
-have InvInv:  inverse_image fP V = 
-              inverse_image (@subspace_inc Xt (Complement U))
-                             (inverse_image f W').
-rewrite/inverse_image.
-rewrite/fP.   
-simpl.
-simpl.
-apply Extensionality_Ensembles; split; red; intros.
-destruct H.
-red in H.
-constructor.
-constructor.
-rewrite/subspace_inc.
-rewrite V_inv_W' in H.
-destruct H.
-simpl in H.
-assumption.
-
-red.
-constructor.
-red in H.
-red.
-rewrite/subspace_inc in H.
-destruct H.
-destruct H.
-rewrite V_inv_W'.
-rewrite/inverse_image.
-constructor.
-simpl.
-assumption.
-rewrite InvInv.
-apply subspace_inc_continuous.
-apply f_continuous.
-assumption. 
-destruct f_bijective as [f_inj f_surj].
-red.
-simpl.
-move=> y.
-destruct y as [y0' Hy0'].
-destruct f_surj with y0' as [x0].
-rewrite/fP.
-have InCUx0: In (Complement U) x0.
-red.
-red.
-move=> InUx0.
-destruct Hy0'.
-red.
-by apply Im_intro with x0.
-exists (exist _  _ InCUx0).
-exact: subset_eq_compatT.
+apply: (@compact_image 
+          (SubspaceTopology (Complement U))
+          (SubspaceTopology (Complement (Im U f)))
+          fP). 
+- apply: closed_compact; first by apply: Xt_compact.
+  by rewrite /= Complement_Complement.
+- move=> V V_open.
+  have [W' [W'_open V_inv_W']]: exists W:Ensemble (point_set Yt),
+      open W /\ V = inverse_image (@subspace_inc Yt (Complement (Im U f))) W
+    by apply: subspace_topology_topology.
+  have ->: inverse_image fP V = 
+           inverse_image (@subspace_inc Xt (Complement U))
+                         (inverse_image f W')
+    by apply: Extensionality_Ensembles; split; rewrite V_inv_W' => [? [[]]].
+  apply: subspace_inc_continuous.
+  exact: f_continuous.
+- case: f_bijective => f_inj f_surj.
+  move=> [y0' Hy0'].
+  case: (f_surj y0') => x0 H. 
+  rewrite/fP.
+  have InCUx0: In (Complement U) x0
+    by move=> InUx0; apply: Hy0'; exists x0.
+  exists (exist _  _ InCUx0).
+  exact: subset_eq_compatT.
 Qed. (*** bij_cont_is_homeo_for_compact_Hausdorff_spaces is defined ***)
 
 Definition approximable_by_homeos (f:X->Y): Prop:=
