@@ -50,43 +50,7 @@ Require Import LemmasForBSC.
 (*******************************)
 Open Scope R_scope.
 
-Section Logical_Topological_Lemmas.
-(*** Some basic logic preparation ***)
-
-Lemma piq_i_nqinp: forall p q:Prop,
-(p -> q) -> (~q -> ~p).
-Proof.
-move=> p q hpiq hnq hp.
-destruct hnq.
-by apply:hpiq.
-Qed.
-
-Lemma npinq_i_qip:  forall p q:Prop,
- (~p -> ~q) -> (q -> p).
-Proof.
-move=> p q hnpinq hq.
-apply NNPP.
-move=> hnp.
-move: hq.
-by apply: hnpinq.
-Qed.
-
-
-Lemma naan_i_ee:
-forall (T:Type) (R: T->T->Prop),
- ~(forall a b:T, ~(R a b)) -> exists a b:T, R a b. 
-Proof.  
-move=> T R hnaan.
-apply NNPP.
-move: hnaan.
-apply piq_i_nqinp.
-move=> ne a b Rab.
-destruct ne.
-exists a.
-exists b.
-assumption.
-Qed.
-
+Section Topological_Lemmas.
 (*** Some frequently used inequqlities ***)
 
 Lemma pos_INR_Sn: forall n:nat, 0 < INR (S n).
@@ -185,7 +149,7 @@ case: (lim_x (open_ball T dt x eps)).
   by rewrite metric_sym.
 Qed.
 
-End Logical_Topological_Lemmas.
+End Topological_Lemmas.
 
 
 Section BingShrinkingTheorem.
