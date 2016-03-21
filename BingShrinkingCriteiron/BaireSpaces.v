@@ -268,7 +268,7 @@ Lemma closed_ball_is_closed :
   forall (x0: point_set X) (r: R), closed (closed_ball x0 r).
 Proof.
 move=> x0 r0; rewrite /closed.
-set cover := fun (xd: { x: point_set X | d x0 x > r0 }%type) =>
+pose cover (xd: { x: point_set X | d x0 x > r0 }%type) :=
   open_ball (point_set X) d (proj1_sig xd) (d x0 (proj1_sig xd) - r0).
 suff ->: Complement (closed_ball x0 r0) = IndexedUnion cover.
 { apply: open_indexed_union => xd.
@@ -300,13 +300,13 @@ Proof.
 move=> H_cplt V H_od.
 apply: Extensionality_Ensembles; split => // x H.
 apply: meets_every_open_neighborhood_impl_closure => U H_opn_U H_In_U_x.
-set (IStep (xrn0 xrn1: point_set X * { r:R | r > 0} * nat) :=
+pose IStep (xrn0 xrn1: point_set X * { r:R | r > 0} * nat) :=
   snd xrn1 = S (snd xrn0) /\
   proj1_sig (snd (fst xrn1)) <= (proj1_sig (snd (fst xrn0))) * /2 /\
   d (fst (fst xrn0)) (fst (fst xrn1)) < (proj1_sig (snd (fst xrn0))) * /2 /\
   Included
     (open_ball _ d (fst (fst xrn1)) (2*proj1_sig (snd (fst xrn1))))
-    (V (snd xrn1))).
+    (V (snd xrn1)).
 (* step 0 *)
 have [x0] : Inhabited (Intersection (V 0%nat) U).
   by apply: dense_meets_every_nonempty_open => //;
@@ -314,9 +314,9 @@ have [x0] : Inhabited (Intersection (V 0%nat) U).
 case/open_ball_in_open_set;
   first by apply: open_intersection2 => //; case (H_od 0%nat).
 move=> r0_t [r0_t_pos Inc_ball_V0U].
-set r0:=r0_t/2.
+pose r0 := r0_t/2.
 have r0_pos: r0>0 by rewrite /r0; fourier.
-set rp0 := exist (fun r:R => r>0)r0 r0_pos.
+pose rp0 := exist (fun r:R => r>0)r0 r0_pos.
 (**** Axiom of Choice used *******)
 have [Fn [H_0 H_n]]: exists Fn : nat -> point_set X * { r:R | r>0 } * nat,
     (Fn 0%nat) = (pair (pair x0 rp0) 0%nat) /\
@@ -325,10 +325,10 @@ have [Fn [H_0 H_n]]: exists Fn : nat -> point_set X * { r:R | r>0 } * nat,
 (*********************************)
   (* step n *)
   move=> xrn.
-  set xn := fst (fst xrn).
-  set rn := proj1_sig (snd (fst xrn)).
-  set rn_pos := proj2_sig (snd (fst xrn)).
-  set nn := snd xrn.
+  pose xn := fst (fst xrn).
+  pose rn := proj1_sig (snd (fst xrn)).
+  pose rn_pos := proj2_sig (snd (fst xrn)).
+  pose nn := snd xrn.
   have [yn] : Inhabited (Intersection (V (S nn)) (open_ball (point_set X) d xn (rn * /2))).
   { apply: dense_meets_every_nonempty_open.
     - by case: (H_od (S nn)).
@@ -343,10 +343,10 @@ have [Fn [H_0 H_n]]: exists Fn : nat -> point_set X * { r:R | r>0 } * nat,
     apply: open_ball_is_open.
     exact: eps2_Rgt_R0.
   - move=> rn1_t [rn1_t_pos HIbVnb].
-    set rn1 := Rmin (rn1_t/2) (rn* /2).
+    pose rn1 := Rmin (rn1_t/2) (rn* /2).
     have rn1_pos: rn1 > 0
       by rewrite /rn1; apply/Rmin_Rgt; split; apply: eps2_Rgt_R0.
-    set rpn1 := exist (fun r:R => r > 0) rn1 rn1_pos.
+    pose rpn1 := exist (fun r:R => r > 0) rn1 rn1_pos.
     exists (yn, rpn1, S nn).
     repeat split => /=; [ by apply: Rmin_r | | ].
     + rewrite -/rn -/xn.
@@ -367,10 +367,10 @@ have [Fn [H_0 H_n]]: exists Fn : nat -> point_set X * { r:R | r>0 } * nat,
       by case.
 }
 (* sequences and properties obtained so far*)
-set (x_n (n : DS_set nat_DS) := fst (fst (Fn n))).
+pose x_n (n : DS_set nat_DS) := fst (fst (Fn n)).
 have x_n_0 : x_n 0%nat = x0
   by rewrite /x_n H_0.
-set (r_n (n : nat) := proj1_sig (snd (fst (Fn n)))).
+pose r_n (n : nat) := proj1_sig (snd (fst (Fn n))).
 have r_n_0 : r_n 0%nat = r0
   by rewrite /r_n H_0.
 have r_n_pos : forall n : nat, r_n n > 0
@@ -452,14 +452,14 @@ have HCauchy: cauchy d x_n.
 (***********************)
 case: (H_cplt _ HCauchy) => xL Lim.
 (***********************)
-set D:= open_ball (point_set X) d xL r0.
+pose D := open_ball (point_set X) d xL r0.
 have HopenD: open D
   by apply: open_ball_is_open.
 case: (Lim D).
 (* assumption. (* <-DOESN'T WORK-*)*)
 - rewrite /=. (** THIS simpl REVEALS THIS open D ISN'T THAT open D**)
 (*apply B_open_intro.*)
-  set F := Singleton D.
+  pose F := Singleton D.
   have ->: D = FamilyUnion F.
   { apply: Extensionality_Ensembles; split; last by move => ? [? ?] [].
     move => x1 H0.
@@ -487,9 +487,9 @@ case: (Lim D).
   exists xL.
   split.
   + constructor => n.
-    set D_n:= open_ball (point_set X) d xL (r_n n).
+    pose D_n := open_ball (point_set X) d xL (r_n n).
     case: (Lim D_n).
-    * set F_n := Singleton D_n.
+    * pose F_n := Singleton D_n.
       have ->: D_n = FamilyUnion F_n.
       { apply: Extensionality_Ensembles; split; last by move => ? [? ?] [].
         move => x2 H1.
@@ -501,12 +501,12 @@ case: (Lim D).
       rewrite metric_zero => //.
       exact: Rgt_lt.
     * rewrite /= => x2 H1.
-      set n1 := max x2 n.
+      pose n1 := max x2 n.
       have [d_xL_xn1]: In D_n (x_n n1).
       { apply: H1.
         by apply: Max.le_max_l.
       }
-      set k1:= (n1 - n)%nat.
+      pose k1 := (n1 - n)%nat.
       have le_0_k1: le 0%nat k1.
       { rewrite (_: (0 = n - n)%nat); last by auto with *.
         apply: minus_le_compat_r.
@@ -533,7 +533,7 @@ case: (Lim D).
       rewrite (_ : 2 * r_n n = r_n n + r_n n); last by field.
       exact: Rplus_le_lt_compat.
 (*****************************)
-  + set n2 := x1.
+  + pose n2 := x1.
     case: (H0 n2); first by auto.
     move=> H1.
     case: (Inc_ball_V0U xL) => //.
